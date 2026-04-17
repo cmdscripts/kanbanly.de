@@ -69,7 +69,15 @@ export async function acceptInvite(formData: FormData) {
     );
   }
 
-  redirect(data ? `/boards/${data}` : '/dashboard');
+  if (!data) redirect('/dashboard');
+
+  const { data: board } = await supabase
+    .from('boards')
+    .select('slug')
+    .eq('id', data)
+    .maybeSingle();
+
+  redirect(board?.slug ? `/boards/${board.slug}` : `/boards/${data}`);
 }
 
 export async function switchAccountForInvite(formData: FormData) {

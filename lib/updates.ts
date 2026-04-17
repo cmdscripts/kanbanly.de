@@ -33,7 +33,7 @@ export const updates: Update[] = [
     date: '2026-04-17',
     title: 'Workspaces & Boards',
     description:
-      'Trello-Style: Workspaces enthalten Boards. Dashboard listet alle auf.',
+      'Workspaces enthalten Boards. Das Dashboard listet alle auf.',
   },
   {
     date: '2026-04-16',

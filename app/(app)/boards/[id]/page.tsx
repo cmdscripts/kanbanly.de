@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { BoardClient } from '@/components/BoardClient';
 import { BoardMenu } from '@/components/BoardMenu';
 import { InviteDialog } from '@/components/InviteDialog';
 import { RenameBoardTitle } from '@/components/RenameTitle';
 import { createClient } from '@/lib/supabase/server';
 import { fetchBoardData } from '@/lib/boardData';
+import { isUuid } from '@/lib/slug';
 
 export default async function BoardPage({
   params,
@@ -20,6 +21,10 @@ export default async function BoardPage({
 
   const { board } = data;
 
+  if (isUuid(id) && board.slug !== id) {
+    redirect(`/boards/${board.slug}`);
+  }
+
   return (
     <>
       <div className="px-3 sm:px-6 py-3 border-b border-slate-800/60 flex items-center justify-between gap-2 sm:gap-3 text-sm">
@@ -32,7 +37,7 @@ export default async function BoardPage({
           </Link>
           <span className="text-slate-600 hidden sm:inline">/</span>
           <Link
-            href={`/workspaces/${board.workspace_id}`}
+            href={`/workspaces/${board.workspace_slug ?? board.workspace_id}`}
             className="text-slate-400 hover:text-slate-100 transition-colors truncate"
           >
             {board.workspace_name ?? ''}

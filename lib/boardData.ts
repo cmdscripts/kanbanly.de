@@ -1,11 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { MemberProfile } from '@/store/boardStore';
+import { isUuid } from '@/lib/slug';
 
 type BoardRow = {
   id: string;
+  slug: string;
   name: string;
   workspace_id: string;
-  workspaces: { name: string } | { name: string }[] | null;
+  workspaces: { name: string; slug: string } | { name: string; slug: string }[] | null;
   lists: Array<{
     id: string;
     title: string;
@@ -46,9 +48,11 @@ type MemberRow = {
 export type BoardData = {
   board: {
     id: string;
+    slug: string;
     name: string;
     workspace_id: string;
     workspace_name: string | null;
+    workspace_slug: string | null;
   };
   initialLists: Array<{ id: string; title: string; position: number }>;
   initialCards: Array<{
@@ -78,8 +82,8 @@ export type BoardData = {
 };
 
 const BOARD_QUERY = `
-  id, name, workspace_id,
-  workspaces(name),
+  id, slug, name, workspace_id,
+  workspaces(name, slug),
   lists(
     id, title, position,
     cards(
@@ -94,15 +98,21 @@ const BOARD_QUERY = `
 
 export async function fetchBoardData(
   supabase: SupabaseClient,
-  boardId: string
+  idOrSlug: string
 ): Promise<BoardData | null> {
-  const [{ data }, { data: membersData }] = await Promise.all([
-    supabase.from('boards').select(BOARD_QUERY).eq('id', boardId).single(),
-    supabase.rpc('board_members_list', { b: boardId }),
-  ]);
+  const filterCol = isUuid(idOrSlug) ? 'id' : 'slug';
+  const { data } = await supabase
+    .from('boards')
+    .select(BOARD_QUERY)
+    .eq(filterCol, idOrSlug)
+    .maybeSingle();
 
   const board = data as BoardRow | null;
   if (!board) return null;
+
+  const { data: membersData } = await supabase.rpc('board_members_list', {
+    b: board.id,
+  });
 
   const members = (membersData ?? []) as MemberRow[];
 
@@ -162,9 +172,11 @@ export async function fetchBoardData(
   return {
     board: {
       id: board.id,
+      slug: board.slug,
       name: board.name,
       workspace_id: board.workspace_id,
       workspace_name: workspace?.name ?? null,
+      workspace_slug: workspace?.slug ?? null,
     },
     initialLists,
     initialCards,

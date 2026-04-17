@@ -29,7 +29,7 @@ export default async function Dashboard({
 
   const { data: workspaces } = await supabase
     .from('workspaces')
-    .select('id, name, boards(id, name, created_at)')
+    .select('id, slug, name, boards(id, slug, name, created_at)')
     .order('created_at', { ascending: true });
 
   return (
@@ -69,7 +69,7 @@ export default async function Dashboard({
               <section key={ws.id}>
                 <div className="flex items-center justify-between mb-3">
                   <Link
-                    href={`/workspaces/${ws.id}`}
+                    href={`/workspaces/${ws.slug}`}
                     className="text-sm font-semibold text-slate-100 tracking-wide uppercase hover:text-violet-200 transition-colors"
                   >
                     {ws.name}
@@ -82,7 +82,7 @@ export default async function Dashboard({
                   {(ws.boards ?? []).map((b) => (
                     <Link
                       key={b.id}
-                      href={`/boards/${b.id}`}
+                      href={`/boards/${b.slug}`}
                       className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-violet-400/60 hover:bg-slate-900/80 transition-colors min-h-[84px] flex items-center"
                     >
                       <div className="font-medium text-slate-100 text-sm leading-snug break-words">

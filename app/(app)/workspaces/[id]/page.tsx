@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { CreateBoardInline } from '@/components/CreateBoardInline';
 import { RenameWorkspaceTitle } from '@/components/RenameTitle';
 import { WorkspaceMenu } from '@/components/WorkspaceMenu';
+import { isUuid } from '@/lib/slug';
 
 export default async function WorkspacePage({
   params,
@@ -13,13 +14,18 @@ export default async function WorkspacePage({
   const { id } = await params;
   const supabase = await createClient();
 
+  const filterCol = isUuid(id) ? 'id' : 'slug';
   const { data: workspace } = await supabase
     .from('workspaces')
-    .select('id, name, boards(id, name, created_at)')
-    .eq('id', id)
-    .single();
+    .select('id, slug, name, boards(id, slug, name, created_at)')
+    .eq(filterCol, id)
+    .maybeSingle();
 
   if (!workspace) notFound();
+
+  if (isUuid(id) && workspace.slug !== id) {
+    redirect(`/workspaces/${workspace.slug}`);
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-6">
@@ -65,7 +71,7 @@ export default async function WorkspacePage({
             {(workspace.boards ?? []).map((b) => (
               <Link
                 key={b.id}
-                href={`/boards/${b.id}`}
+                href={`/boards/${b.slug}`}
                 className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-violet-400/60 hover:bg-slate-900/80 transition-colors min-h-[84px] flex items-center"
               >
                 <div className="font-medium text-slate-100 text-sm leading-snug break-words">
