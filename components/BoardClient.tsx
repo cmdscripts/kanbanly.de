@@ -46,6 +46,31 @@ const REALTIME_TABLES = [
 
 const REFETCH_DEBOUNCE_MS = 300;
 
+function extractCardId(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const p = payload as {
+    table?: string;
+    new?: Record<string, unknown>;
+    old?: Record<string, unknown>;
+  };
+  const row = (p.new && Object.keys(p.new).length > 0 ? p.new : p.old) ?? null;
+  if (!row) return null;
+  switch (p.table) {
+    case 'cards': {
+      const id = row.id;
+      return typeof id === 'string' ? id : null;
+    }
+    case 'tasks':
+    case 'card_assignees':
+    case 'card_labels': {
+      const id = row.card_id;
+      return typeof id === 'string' ? id : null;
+    }
+    default:
+      return null;
+  }
+}
+
 export function BoardClient({
   boardId,
   initialLists,
@@ -97,6 +122,8 @@ export function BoardClient({
     };
 
     const schedule = (payload: unknown) => {
+      const cardId = extractCardId(payload);
+      if (cardId) useBoard.getState().maybePulse(cardId);
       if (debounce) clearTimeout(debounce);
       debounce = setTimeout(refetch, REFETCH_DEBOUNCE_MS);
     };

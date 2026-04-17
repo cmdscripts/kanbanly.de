@@ -43,6 +43,7 @@ function CardInner({ id, isDragging }: Props) {
   const memberProfiles = useBoard((s) => s.memberProfiles);
   const cardLabelIds = useBoard((s) => s.cardLabels[id]) ?? [];
   const labels = useBoard((s) => s.labels);
+  const pulsing = useBoard((s) => !!s.pulsingCards[id]);
 
   if (!card) return null;
 
@@ -57,9 +58,11 @@ function CardInner({ id, isDragging }: Props) {
   return (
     <div
       onClick={() => setOpenCardId(id)}
-      className={`rounded-xl bg-slate-800/80 border p-3 cursor-pointer transition-shadow duration-150 ${
+      className={`rounded-xl bg-slate-800/80 border p-3 cursor-pointer transition-all duration-700 ${
         isDragging
           ? 'shadow-xl shadow-violet-500/30 border-violet-400/60 ring-1 ring-violet-400/40'
+          : pulsing
+          ? 'border-emerald-400/60 ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-500/20'
           : 'border-slate-700/60 shadow-sm hover:border-slate-600 hover:shadow-md'
       }`}
     >

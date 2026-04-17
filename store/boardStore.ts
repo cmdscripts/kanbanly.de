@@ -2,6 +2,46 @@
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
 
+const PULSE_DURATION_MS = 1200;
+const PULSE_SUPPRESS_MS = 1500;
+const pulseTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const suppressUntil = new Map<string, number>();
+
+type ActivityKind =
+  | 'created'
+  | 'renamed'
+  | 'described'
+  | 'due_set'
+  | 'due_cleared'
+  | 'moved'
+  | 'assignee_added'
+  | 'assignee_removed'
+  | 'label_added'
+  | 'label_removed'
+  | 'task_added'
+  | 'task_done'
+  | 'task_undone'
+  | 'task_deleted';
+
+async function logActivity(
+  cardId: string,
+  kind: ActivityKind,
+  meta?: Record<string, unknown>
+) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  const { error } = await supabase.from('card_activity').insert({
+    card_id: cardId,
+    user_id: user.id,
+    kind,
+    meta: meta ?? null,
+  });
+  if (error) console.error('logActivity', error);
+}
+
 export type TaskT = { id: string; title: string; done: boolean };
 export type CardT = {
   id: string;
@@ -63,6 +103,10 @@ type State = {
   labelOrder: string[];
   cardLabels: Record<string, string[]>;
 
+  pulsingCards: Record<string, true>;
+  suppressPulse: (cardIds: string[]) => void;
+  maybePulse: (cardId: string) => void;
+
   openCardId: string | null;
   setOpenCardId: (id: string | null) => void;
 
@@ -115,9 +159,41 @@ export const useBoard = create<State>((set, get) => ({
   labels: {},
   labelOrder: [],
   cardLabels: {},
+  pulsingCards: {},
   openCardId: null,
 
   setOpenCardId: (id) => set({ openCardId: id }),
+
+  suppressPulse(cardIds) {
+    const until = Date.now() + PULSE_SUPPRESS_MS;
+    for (const id of cardIds) suppressUntil.set(id, until);
+  },
+
+  maybePulse(cardId) {
+    const now = Date.now();
+    const expires = suppressUntil.get(cardId);
+    if (expires && now < expires) {
+      suppressUntil.delete(cardId);
+      return;
+    }
+    const existing = pulseTimers.get(cardId);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      pulseTimers.delete(cardId);
+      set((s) => {
+        if (!s.pulsingCards[cardId]) return s;
+        const next = { ...s.pulsingCards };
+        delete next[cardId];
+        return { pulsingCards: next };
+      });
+    }, PULSE_DURATION_MS);
+    pulseTimers.set(cardId, timer);
+    set((s) =>
+      s.pulsingCards[cardId]
+        ? s
+        : { pulsingCards: { ...s.pulsingCards, [cardId]: true } }
+    );
+  },
 
   hydrate(
     boardId,
@@ -247,6 +323,7 @@ export const useBoard = create<State>((set, get) => ({
   },
 
   async toggleCardLabel(cardId, labelId) {
+    get().suppressPulse([cardId]);
     const current = get().cardLabels[cardId] ?? [];
     const applied = current.includes(labelId);
 
@@ -260,6 +337,8 @@ export const useBoard = create<State>((set, get) => ({
     }));
 
     const supabase = createClient();
+    const label = get().labels[labelId];
+    const labelName = label?.name ?? '';
     if (applied) {
       const { error } = await supabase
         .from('card_labels')
@@ -267,15 +346,18 @@ export const useBoard = create<State>((set, get) => ({
         .eq('card_id', cardId)
         .eq('label_id', labelId);
       if (error) console.error('toggleCardLabel remove', error);
+      else logActivity(cardId, 'label_removed', { label: labelName });
     } else {
       const { error } = await supabase
         .from('card_labels')
         .insert({ card_id: cardId, label_id: labelId });
       if (error) console.error('toggleCardLabel add', error);
+      else logActivity(cardId, 'label_added', { label: labelName });
     }
   },
 
   async toggleAssignee(cardId, userId) {
+    get().suppressPulse([cardId]);
     const current = get().assignees[cardId] ?? [];
     const isAssigned = current.includes(userId);
 
@@ -289,6 +371,8 @@ export const useBoard = create<State>((set, get) => ({
     }));
 
     const supabase = createClient();
+    const profile = get().memberProfiles[userId];
+    const username = profile?.username ?? null;
     if (isAssigned) {
       const { error } = await supabase
         .from('card_assignees')
@@ -296,11 +380,13 @@ export const useBoard = create<State>((set, get) => ({
         .eq('card_id', cardId)
         .eq('user_id', userId);
       if (error) console.error('toggleAssignee remove', error);
+      else logActivity(cardId, 'assignee_removed', { user_id: userId, username });
     } else {
       const { error } = await supabase
         .from('card_assignees')
         .insert({ card_id: cardId, user_id: userId });
       if (error) console.error('toggleAssignee add', error);
+      else logActivity(cardId, 'assignee_added', { user_id: userId, username });
     }
   },
 
@@ -382,6 +468,7 @@ export const useBoard = create<State>((set, get) => ({
     if (!list) return;
     const id = crypto.randomUUID();
     const position = list.cardIds.length;
+    get().suppressPulse([id]);
 
     set((state) => ({
       cards: {
@@ -399,6 +486,7 @@ export const useBoard = create<State>((set, get) => ({
       .from('cards')
       .insert({ id, list_id: listId, title, position });
     if (error) console.error('addCard', error);
+    else logActivity(id, 'created', { title });
   },
 
   async moveCard(source, destination) {
@@ -406,6 +494,11 @@ export const useBoard = create<State>((set, get) => ({
     const srcList = state.lists[source.listId];
     const dstList = state.lists[destination.listId];
     if (!srcList || !dstList) return;
+
+    const affectedCards = Array.from(
+      new Set([...srcList.cardIds, ...dstList.cardIds])
+    );
+    state.suppressPulse(affectedCards);
 
     const srcCardIds = [...srcList.cardIds];
     const [moved] = srcCardIds.splice(source.index, 1);
@@ -450,6 +543,11 @@ export const useBoard = create<State>((set, get) => ({
       });
     }
     await Promise.all(promises);
+    if (source.listId !== destination.listId) {
+      const fromTitle = srcList.title;
+      const toTitle = dstList.title;
+      logActivity(moved, 'moved', { from: fromTitle, to: toTitle });
+    }
   },
 
   async updateCardTitle(cardId, title) {
@@ -457,6 +555,7 @@ export const useBoard = create<State>((set, get) => ({
     if (!card) return;
     const trimmed = title.trim();
     if (!trimmed || trimmed === card.title) return;
+    get().suppressPulse([cardId]);
 
     set((state) => ({
       cards: {
@@ -471,6 +570,7 @@ export const useBoard = create<State>((set, get) => ({
       .update({ title: trimmed })
       .eq('id', cardId);
     if (error) console.error('updateCardTitle', error);
+    else logActivity(cardId, 'renamed', { from: card.title, to: trimmed });
   },
 
   async updateCardDueDate(cardId, due) {
@@ -478,6 +578,7 @@ export const useBoard = create<State>((set, get) => ({
     if (!card) return;
     const next = due && due.trim() ? due : null;
     if (next === card.due_date) return;
+    get().suppressPulse([cardId]);
 
     set((state) => ({
       cards: {
@@ -492,6 +593,7 @@ export const useBoard = create<State>((set, get) => ({
       .update({ due_date: next })
       .eq('id', cardId);
     if (error) console.error('updateCardDueDate', error);
+    else logActivity(cardId, next ? 'due_set' : 'due_cleared', { due: next });
   },
 
   async updateCardDescription(cardId, description) {
@@ -499,6 +601,7 @@ export const useBoard = create<State>((set, get) => ({
     if (!card) return;
     const next = description && description.trim() ? description : null;
     if ((next ?? '') === (card.description ?? '')) return;
+    get().suppressPulse([cardId]);
 
     set((state) => ({
       cards: {
@@ -513,6 +616,7 @@ export const useBoard = create<State>((set, get) => ({
       .update({ description: next })
       .eq('id', cardId);
     if (error) console.error('updateCardDescription', error);
+    else logActivity(cardId, 'described');
   },
 
   async deleteCard(cardId) {
@@ -565,6 +669,7 @@ export const useBoard = create<State>((set, get) => ({
     if (!card) return;
     const id = crypto.randomUUID();
     const position = card.tasks.length;
+    get().suppressPulse([cardId]);
 
     set((state) => ({
       cards: {
@@ -581,6 +686,7 @@ export const useBoard = create<State>((set, get) => ({
       .from('tasks')
       .insert({ id, card_id: cardId, title, position });
     if (error) console.error('addTask', error);
+    else logActivity(cardId, 'task_added', { title });
   },
 
   async toggleTask(cardId, taskId) {
@@ -589,6 +695,7 @@ export const useBoard = create<State>((set, get) => ({
     const task = card.tasks.find((t) => t.id === taskId);
     if (!task) return;
     const newDone = !task.done;
+    get().suppressPulse([cardId]);
 
     set((state) => ({
       cards: {
@@ -608,11 +715,17 @@ export const useBoard = create<State>((set, get) => ({
       .update({ done: newDone })
       .eq('id', taskId);
     if (error) console.error('toggleTask', error);
+    else
+      logActivity(cardId, newDone ? 'task_done' : 'task_undone', {
+        title: task.title,
+      });
   },
 
   async deleteTask(cardId, taskId) {
     const card = get().cards[cardId];
     if (!card) return;
+    const task = card.tasks.find((t) => t.id === taskId);
+    get().suppressPulse([cardId]);
 
     set((state) => ({
       cards: {
@@ -627,5 +740,6 @@ export const useBoard = create<State>((set, get) => ({
     const supabase = createClient();
     const { error } = await supabase.from('tasks').delete().eq('id', taskId);
     if (error) console.error('deleteTask', error);
+    else logActivity(cardId, 'task_deleted', { title: task?.title ?? null });
   },
 }));

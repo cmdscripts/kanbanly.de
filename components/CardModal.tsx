@@ -4,6 +4,8 @@ import { useBoard } from '@/store/boardStore';
 import { confirm } from '@/store/confirmStore';
 import { Avatar } from './Avatar';
 import { LabelsPicker } from './LabelsPicker';
+import { DescriptionEditor } from './DescriptionEditor';
+import { ActivityLog } from './ActivityLog';
 
 export function CardModal() {
   const openCardId = useBoard((s) => s.openCardId);
@@ -200,13 +202,11 @@ export function CardModal() {
           <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
             Beschreibung
           </h3>
-          <textarea
+          <DescriptionEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             onBlur={saveDescription}
-            placeholder="Details, Links, Notizen…"
-            rows={3}
-            className="w-full rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60 resize-y"
+            placeholder="Details, Links, Notizen… **Markdown** unterstützt."
           />
         </section>
 
@@ -290,6 +290,15 @@ export function CardModal() {
               Hinzufügen
             </button>
           </form>
+        </section>
+
+        <section className="p-5 border-b border-slate-800">
+          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Aktivität
+          </h3>
+          <div className="max-h-56 overflow-y-auto board-scroll pr-1">
+            <ActivityLog cardId={openCardId} />
+          </div>
         </section>
 
         <div className="p-5 flex justify-end">
