@@ -96,9 +96,13 @@ export function BoardClient({
       );
     };
 
-    const schedule = () => {
+    const schedule = (payload: unknown) => {
+      console.log('[realtime] event', payload);
       if (debounce) clearTimeout(debounce);
-      debounce = setTimeout(refetch, REFETCH_DEBOUNCE_MS);
+      debounce = setTimeout(() => {
+        console.log('[realtime] refetch fired');
+        refetch();
+      }, REFETCH_DEBOUNCE_MS);
     };
 
     const channel = supabase.channel(`board-${boardId}`);
@@ -109,7 +113,9 @@ export function BoardClient({
         schedule
       );
     }
-    channel.subscribe();
+    channel.subscribe((status, err) => {
+      console.log('[realtime] subscribe status:', status, err ?? '');
+    });
 
     return () => {
       cancelled = true;
