@@ -41,39 +41,25 @@ export default function Board() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <header className="px-6 py-4 border-b border-slate-800/60 backdrop-blur-sm flex items-center gap-3">
-        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-emerald-400 grid place-items-center font-bold text-white text-sm shadow-lg shadow-violet-500/20">
-          k
-        </div>
-        <div>
-          <h1 className="text-base font-semibold text-slate-100 tracking-tight">
-            kanbanly
-          </h1>
-          <p className="text-[11px] text-slate-500">Flow first. Build fast.</p>
-        </div>
-      </header>
-
-      <div className="flex-1 overflow-x-auto board-scroll p-6 min-h-0">
-        {mounted ? (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex gap-4 items-start min-h-full">
-              {listOrder.map((id) => (
-                <List key={id} listId={id} />
-              ))}
-            </div>
-          </DragDropContext>
-        ) : (
-          <div className="flex gap-4 items-start">
+    <div className="flex-1 overflow-x-auto board-scroll p-6 min-h-0">
+      {mounted ? (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex gap-4 items-start min-h-full">
             {listOrder.map((id) => (
-              <div
-                key={id}
-                className="w-[320px] h-40 rounded-2xl bg-slate-900/60 border border-slate-800/80 animate-pulse"
-              />
+              <List key={id} listId={id} />
             ))}
           </div>
-        )}
-      </div>
+        </DragDropContext>
+      ) : (
+        <div className="flex gap-4 items-start">
+          {listOrder.map((id) => (
+            <div
+              key={id}
+              className="w-[320px] h-40 rounded-2xl bg-slate-900/60 border border-slate-800/80 animate-pulse"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { useBoard } from '@/store/boardStore';
 import { Card } from './Card';
@@ -12,6 +13,11 @@ function ListInner({ listId }: Props) {
   const addCard = useBoard((s) => s.addCard);
   const [newTitle, setNewTitle] = useState('');
   const [adding, setAdding] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   if (!list) return null;
 
@@ -23,7 +29,7 @@ function ListInner({ listId }: Props) {
       : 'bg-slate-400';
 
   return (
-    <div className="w-[320px] shrink-0 flex flex-col rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 max-h-[calc(100vh-8rem)]">
+    <div className="w-[320px] shrink-0 flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 max-h-[calc(100vh-8rem)]">
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/80">
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${dotColor}`} />
@@ -47,19 +53,25 @@ function ListInner({ listId }: Props) {
           >
             {list.cardIds.map((cardId, idx) => (
               <Draggable key={cardId} draggableId={cardId} index={idx}>
-                {(drag, snap) => (
-                  <div
-                    ref={drag.innerRef}
-                    {...drag.draggableProps}
-                    {...drag.dragHandleProps}
-                    style={{
-                      ...drag.draggableProps.style,
-                      zIndex: snap.isDragging ? 50 : 'auto',
-                    }}
-                  >
-                    <Card id={cardId} isDragging={snap.isDragging} />
-                  </div>
-                )}
+                {(drag, snap) => {
+                  const content = (
+                    <div
+                      ref={drag.innerRef}
+                      {...drag.draggableProps}
+                      {...drag.dragHandleProps}
+                      style={{
+                        ...drag.draggableProps.style,
+                        zIndex: snap.isDragging ? 9999 : undefined,
+                      }}
+                    >
+                      <Card id={cardId} isDragging={snap.isDragging} />
+                    </div>
+                  );
+                  if (snap.isDragging && portalTarget) {
+                    return createPortal(content, portalTarget);
+                  }
+                  return content;
+                }}
               </Draggable>
             ))}
             {provided.placeholder}

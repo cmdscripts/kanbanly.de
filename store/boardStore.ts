@@ -11,8 +11,6 @@ export type CardT = {
   id: string;
   title: string;
   tasks: Task[];
-  timeSpent: number;
-  timerStartedAt: number | null;
 };
 
 export type ListT = {
@@ -30,7 +28,6 @@ type BoardState = {
     destination: { listId: string; index: number }
   ) => void;
   addCard: (listId: string, title: string) => void;
-  toggleTimer: (cardId: string) => void;
   toggleTask: (cardId: string, taskId: string) => void;
   addTask: (cardId: string, title: string) => void;
   addList: (title: string) => void;
@@ -53,8 +50,6 @@ export const useBoard = create<BoardState>((set) => ({
         { id: 't2', title: 'Features', done: false },
         { id: 't3', title: 'Footer', done: false },
       ],
-      timeSpent: 0,
-      timerStartedAt: null,
     },
     c2: {
       id: 'c2',
@@ -63,15 +58,11 @@ export const useBoard = create<BoardState>((set) => ({
         { id: 't4', title: 'Projekt erstellen', done: false },
         { id: 't5', title: 'Schema anlegen', done: false },
       ],
-      timeSpent: 0,
-      timerStartedAt: null,
     },
     c3: {
       id: 'c3',
       title: 'Drag & Drop testen',
       tasks: [{ id: 't6', title: 'mit @hello-pangea/dnd', done: true }],
-      timeSpent: 1243,
-      timerStartedAt: null,
     },
   },
   listOrder: ['todo', 'doing', 'done'],
@@ -115,37 +106,11 @@ export const useBoard = create<BoardState>((set) => ({
       return {
         cards: {
           ...state.cards,
-          [id]: { id, title, tasks: [], timeSpent: 0, timerStartedAt: null },
+          [id]: { id, title, tasks: [] },
         },
         lists: {
           ...state.lists,
           [listId]: { ...list, cardIds: [...list.cardIds, id] },
-        },
-      };
-    }),
-
-  toggleTimer: (cardId) =>
-    set((state) => {
-      const card = state.cards[cardId];
-      if (!card) return state;
-      const now = Date.now();
-      if (card.timerStartedAt) {
-        const extra = Math.floor((now - card.timerStartedAt) / 1000);
-        return {
-          cards: {
-            ...state.cards,
-            [cardId]: {
-              ...card,
-              timeSpent: card.timeSpent + extra,
-              timerStartedAt: null,
-            },
-          },
-        };
-      }
-      return {
-        cards: {
-          ...state.cards,
-          [cardId]: { ...card, timerStartedAt: now },
         },
       };
     }),

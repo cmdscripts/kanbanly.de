@@ -1,0 +1,117 @@
+import Link from 'next/link';
+
+export const metadata = { title: 'Impressum — kanbanly' };
+
+export default function ImpressumPage() {
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center gap-3 mb-8">
+          <Link
+            href="/"
+            className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500 to-emerald-400 grid place-items-center font-bold text-white text-sm shadow-lg shadow-violet-500/20"
+          >
+            k
+          </Link>
+          <h1 className="text-2xl font-semibold text-slate-100">Impressum</h1>
+        </div>
+
+        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 space-y-6 text-sm text-slate-300">
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              Angaben gemäß § 5 TMG
+            </h2>
+            <p className="leading-relaxed">
+              [Felix Franzen]
+              <br />
+              [Am Süllberg 6]
+              <br />
+              [29633 Munster]
+              <br />
+              Deutschland
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              Kontakt
+            </h2>
+            <p className="leading-relaxed">
+              E-Mail: [felixfranzen2026@gmail.com]
+              <br />
+              Telefon: [auf Anfrage]
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
+            </h2>
+            <p className="leading-relaxed">
+              [Felix Franzen]
+              <br />
+              [Am Süllberg 6]
+              <br />
+              [29633 Munster]
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              Haftung für Inhalte
+            </h2>
+            <p className="leading-relaxed">
+              Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene
+              Inhalte auf diesen Seiten nach den allgemeinen Gesetzen
+              verantwortlich. Nach §§ 8 bis 10 TMG sind wir als
+              Diensteanbieter jedoch nicht verpflichtet, übermittelte oder
+              gespeicherte fremde Informationen zu überwachen oder nach
+              Umständen zu forschen, die auf eine rechtswidrige Tätigkeit
+              hinweisen.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              Haftung für Links
+            </h2>
+            <p className="leading-relaxed">
+              Unser Angebot enthält Links zu externen Webseiten Dritter, auf
+              deren Inhalte wir keinen Einfluss haben. Deshalb können wir für
+              diese fremden Inhalte auch keine Gewähr übernehmen. Für die
+              Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter
+              oder Betreiber der Seiten verantwortlich.
+            </p>
+          </section>
+
+          <section className="pt-4 border-t border-slate-800">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              <strong className="text-slate-400">Hinweis:</strong> Dieser Text
+              enthält Platzhalter in [ECKIGEN KLAMMERN]. Bitte ersetze sie
+              durch deine echten Daten. Für einen vollständig rechtssicheren
+              Impressum-Text empfehlen wir den kostenlosen Generator von{' '}
+              <a
+                href="https://www.e-recht24.de/impressum-generator.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-violet-300 hover:text-violet-200 underline"
+              >
+                e-recht24.de
+              </a>
+              .
+            </p>
+          </section>
+        </div>
+
+        <div className="mt-6">
+          <Link
+            href="/"
+            className="text-sm text-slate-400 hover:text-slate-100"
+          >
+            ← Zurück
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,94 @@
+'use client';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { updates } from '@/lib/updates';
+
+export function HelpMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const recent = updates.slice(0, 5);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Hilfe und Informationen"
+        aria-expanded={open}
+        className="h-8 w-8 grid place-items-center rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-slate-100 text-sm transition-colors"
+      >
+        ?
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-10 w-80 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50">
+          <div className="px-4 pt-3 pb-2 border-b border-slate-800">
+            <h3 className="text-xs font-semibold text-slate-100 uppercase tracking-wide">
+              Neuigkeiten
+            </h3>
+          </div>
+          <ul className="max-h-80 overflow-y-auto divide-y divide-slate-800">
+            {recent.map((u, i) => (
+              <li key={i} className="px-4 py-3">
+                <div className="flex items-baseline justify-between gap-2 mb-0.5">
+                  <span className="text-sm font-medium text-slate-100">
+                    {u.title}
+                  </span>
+                  <span className="text-[10px] text-slate-500 tabular-nums shrink-0">
+                    {u.date}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 leading-snug">
+                  {u.description}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          <div className="px-4 pt-2 pb-3 border-t border-slate-800 bg-slate-950/40">
+            <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Rechtliches
+            </h3>
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/impressum"
+                onClick={() => setOpen(false)}
+                className="text-xs text-slate-300 hover:text-violet-300"
+              >
+                Impressum
+              </Link>
+              <Link
+                href="/datenschutz"
+                onClick={() => setOpen(false)}
+                className="text-xs text-slate-300 hover:text-violet-300"
+              >
+                Datenschutzerklärung
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
