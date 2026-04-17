@@ -41,7 +41,7 @@ function ListInner({ listId }: Props) {
     : 'bg-slate-400';
 
   return (
-    <div className="w-[320px] shrink-0 flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 max-h-[calc(100vh-8rem)]">
+    <div className="w-[88vw] sm:w-[320px] shrink-0 flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 max-h-[calc(100vh-9rem)] sm:max-h-[calc(100vh-8rem)]">
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/80">
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${dotColor}`} />

@@ -13,7 +13,7 @@ export function AddListInline() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-[320px] shrink-0 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-700 hover:border-violet-400/60 hover:bg-slate-900/40 text-slate-400 hover:text-slate-100 text-sm py-4 transition-colors"
+        className="w-[88vw] sm:w-[320px] shrink-0 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-700 hover:border-violet-400/60 hover:bg-slate-900/40 text-slate-400 hover:text-slate-100 text-sm py-4 transition-colors"
       >
         <PlusIcon />
         Neue Spalte
@@ -30,7 +30,7 @@ export function AddListInline() {
         setTitle('');
         setOpen(false);
       }}
-      className="w-[320px] shrink-0 rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 flex flex-col gap-2"
+      className="w-[88vw] sm:w-[320px] shrink-0 rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 flex flex-col gap-2"
     >
       <input
         autoFocus

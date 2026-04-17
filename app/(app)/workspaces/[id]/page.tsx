@@ -48,20 +48,34 @@ export default async function WorkspacePage({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(workspace.boards ?? []).map((b) => (
-            <Link
-              key={b.id}
-              href={`/boards/${b.id}`}
-              className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-violet-400/60 hover:bg-slate-900/80 transition-colors min-h-[84px] flex items-center"
-            >
-              <div className="font-medium text-slate-100 text-sm leading-snug break-words">
-                {b.name}
-              </div>
-            </Link>
-          ))}
-          <CreateBoardInline workspaceId={workspace.id} />
-        </div>
+        {(workspace.boards ?? []).length === 0 ? (
+          <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-8 sm:p-10 text-center">
+            <h2 className="text-lg font-semibold text-slate-100 mb-1">
+              Noch keine Boards
+            </h2>
+            <p className="text-sm text-slate-400 mb-5">
+              Leg dein erstes Board an, um mit Spalten und Karten zu starten.
+            </p>
+            <div className="inline-flex">
+              <CreateBoardInline workspaceId={workspace.id} />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {(workspace.boards ?? []).map((b) => (
+              <Link
+                key={b.id}
+                href={`/boards/${b.id}`}
+                className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-violet-400/60 hover:bg-slate-900/80 transition-colors min-h-[84px] flex items-center"
+              >
+                <div className="font-medium text-slate-100 text-sm leading-snug break-words">
+                  {b.name}
+                </div>
+              </Link>
+            ))}
+            <CreateBoardInline workspaceId={workspace.id} />
+          </div>
+        )}
       </div>
     </div>
   );

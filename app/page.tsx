@@ -13,7 +13,7 @@ export default async function LandingPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <header className="px-6 py-3 flex items-center justify-between">
+      <header className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div className="flex flex-col">
           <h1 className="text-base font-semibold text-slate-100 tracking-tight leading-none">
             kanbanly
@@ -22,7 +22,7 @@ export default async function LandingPage() {
             Flow first. Build fast.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {signedIn ? (
             <Link
               href="/dashboard"
@@ -51,9 +51,9 @@ export default async function LandingPage() {
       </header>
 
       <main className="flex-1 flex flex-col">
-        <section className="px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
+        <section className="px-4 sm:px-6 pt-12 pb-16 sm:pt-24 sm:pb-28">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl sm:text-5xl font-semibold text-slate-100 tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-semibold text-slate-100 tracking-tight leading-tight">
               Manage dein Projekt —{' '}
               <span className="bg-gradient-to-r from-violet-300 to-emerald-300 bg-clip-text text-transparent">
                 ohne Chaos
@@ -65,7 +65,7 @@ export default async function LandingPage() {
               Zuweisungen. Drag &amp; Drop, live gespeichert. Gemacht für dich
               und dein Team.
             </p>
-            <div className="mt-8 flex items-center justify-center gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
               <Link
                 href={signedIn ? '/dashboard' : '/register'}
                 className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-5 py-2.5 transition-colors shadow-lg shadow-violet-500/20"
@@ -84,7 +84,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <section className="px-6 pb-20">
+        <section className="px-4 sm:px-6 pb-16 sm:pb-20">
           <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Feature
               title="Workspaces & Boards"
@@ -105,8 +105,8 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <section className="px-6 pb-24">
-          <div className="max-w-3xl mx-auto rounded-2xl bg-slate-900/60 border border-slate-800/80 p-8 text-center">
+        <section className="px-4 sm:px-6 pb-20 sm:pb-24">
+          <div className="max-w-3xl mx-auto rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 sm:p-8 text-center">
             <h3 className="text-xl font-semibold text-slate-100 mb-2">
               Bereit loszulegen?
             </h3>

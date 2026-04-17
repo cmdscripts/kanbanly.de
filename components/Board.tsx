@@ -31,22 +31,39 @@ export default function Board() {
   };
 
   return (
-    <div className="flex-1 overflow-x-auto board-scroll p-6 min-h-0">
+    <div className="flex-1 overflow-x-auto overscroll-x-contain board-scroll p-3 sm:p-6 min-h-0">
       {mounted ? (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="flex gap-4 items-start min-h-full">
-            {listOrder.map((id) => (
-              <List key={id} listId={id} />
-            ))}
-            <AddListInline />
+        listOrder.length === 0 ? (
+          <div className="h-full min-h-[60vh] flex items-center justify-center">
+            <div className="max-w-sm text-center rounded-2xl bg-slate-900/50 border border-slate-800/80 p-8">
+              <h3 className="text-base font-semibold text-slate-100 mb-1">
+                Leere Bühne
+              </h3>
+              <p className="text-sm text-slate-400 mb-5">
+                Leg deine erste Spalte an — z. B. „To-do", „In Arbeit",
+                „Erledigt".
+              </p>
+              <div className="inline-flex">
+                <AddListInline />
+              </div>
+            </div>
           </div>
-        </DragDropContext>
+        ) : (
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="flex gap-3 sm:gap-4 items-start min-h-full">
+              {listOrder.map((id) => (
+                <List key={id} listId={id} />
+              ))}
+              <AddListInline />
+            </div>
+          </DragDropContext>
+        )
       ) : (
-        <div className="flex gap-4 items-start">
+        <div className="flex gap-3 sm:gap-4 items-start">
           {listOrder.map((id) => (
             <div
               key={id}
-              className="w-[320px] h-40 rounded-2xl bg-slate-900/60 border border-slate-800/80 animate-pulse"
+              className="w-[88vw] sm:w-[320px] h-40 rounded-2xl bg-slate-900/60 border border-slate-800/80 animate-pulse shrink-0"
             />
           ))}
         </div>

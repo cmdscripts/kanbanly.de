@@ -1,6 +1,8 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useBoard, type MemberProfile } from '@/store/boardStore';
+import { createClient } from '@/lib/supabase/client';
+import { fetchBoardData } from '@/lib/boardData';
 import Board from './Board';
 import { CardModal } from './CardModal';
 
@@ -33,6 +35,17 @@ type Props = {
   initialCardLabels: Array<{ card_id: string; label_id: string }>;
 };
 
+const REALTIME_TABLES = [
+  'lists',
+  'cards',
+  'tasks',
+  'labels',
+  'card_assignees',
+  'card_labels',
+] as const;
+
+const REFETCH_DEBOUNCE_MS = 300;
+
 export function BoardClient({
   boardId,
   initialLists,
@@ -44,6 +57,8 @@ export function BoardClient({
   initialCardLabels,
 }: Props) {
   const hydrate = useBoard((s) => s.hydrate);
+  const hydrateRef = useRef(hydrate);
+  hydrateRef.current = hydrate;
 
   useEffect(() => {
     hydrate(
@@ -57,6 +72,50 @@ export function BoardClient({
       initialCardLabels
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId]);
+
+  useEffect(() => {
+    if (!boardId) return;
+
+    const supabase = createClient();
+    let debounce: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const refetch = async () => {
+      const data = await fetchBoardData(supabase, boardId);
+      if (cancelled || !data) return;
+      hydrateRef.current(
+        boardId,
+        data.initialLists,
+        data.initialCards,
+        data.initialTasks,
+        data.initialAssignees,
+        data.initialMembers,
+        data.initialLabels,
+        data.initialCardLabels
+      );
+    };
+
+    const schedule = () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(refetch, REFETCH_DEBOUNCE_MS);
+    };
+
+    const channel = supabase.channel(`board-${boardId}`);
+    for (const table of REALTIME_TABLES) {
+      channel.on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table },
+        schedule
+      );
+    }
+    channel.subscribe();
+
+    return () => {
+      cancelled = true;
+      if (debounce) clearTimeout(debounce);
+      supabase.removeChannel(channel);
+    };
   }, [boardId]);
 
   return (

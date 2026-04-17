@@ -5,48 +5,7 @@ import { BoardMenu } from '@/components/BoardMenu';
 import { InviteDialog } from '@/components/InviteDialog';
 import { RenameBoardTitle } from '@/components/RenameTitle';
 import { createClient } from '@/lib/supabase/server';
-
-type BoardRow = {
-  id: string;
-  name: string;
-  workspace_id: string;
-  workspaces: { name: string } | { name: string }[] | null;
-  lists: Array<{
-    id: string;
-    title: string;
-    position: number;
-    cards: Array<{
-      id: string;
-      list_id: string;
-      title: string;
-      description: string | null;
-      due_date: string | null;
-      position: number;
-      tasks: Array<{
-        id: string;
-        card_id: string;
-        title: string;
-        done: boolean;
-        position: number;
-      }> | null;
-      card_assignees: Array<{ user_id: string }> | null;
-      card_labels: Array<{ label_id: string }> | null;
-    }> | null;
-  }> | null;
-  labels: Array<{
-    id: string;
-    name: string;
-    color: string;
-    created_at: string;
-  }> | null;
-};
-
-type MemberRow = {
-  user_id: string;
-  username: string | null;
-  avatar_url: string | null;
-  role: string;
-};
+import { fetchBoardData } from '@/lib/boardData';
 
 export default async function BoardPage({
   params,
@@ -56,104 +15,27 @@ export default async function BoardPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data }, { data: membersData }] = await Promise.all([
-    supabase
-      .from('boards')
-      .select(
-        `
-          id, name, workspace_id,
-          workspaces(name),
-          lists(
-            id, title, position,
-            cards(
-              id, list_id, title, description, due_date, position,
-              tasks(id, card_id, title, done, position),
-              card_assignees(user_id),
-              card_labels(label_id)
-            )
-          ),
-          labels(id, name, color, created_at)
-        `
-      )
-      .eq('id', id)
-      .single(),
-    supabase.rpc('board_members_list', { b: id }),
-  ]);
+  const data = await fetchBoardData(supabase, id);
+  if (!data) notFound();
 
-  const board = data as BoardRow | null;
-  if (!board) notFound();
-
-  const members = (membersData ?? []) as MemberRow[];
-
-  const workspace = Array.isArray(board.workspaces)
-    ? board.workspaces[0]
-    : board.workspaces;
-
-  const initialLists = (board.lists ?? []).map((l) => ({
-    id: l.id,
-    title: l.title,
-    position: l.position,
-  }));
-
-  const initialCards = (board.lists ?? []).flatMap((l) =>
-    (l.cards ?? []).map((c) => ({
-      id: c.id,
-      list_id: c.list_id,
-      title: c.title,
-      description: c.description,
-      due_date: c.due_date,
-      position: c.position,
-    }))
-  );
-
-  const initialTasks = (board.lists ?? []).flatMap((l) =>
-    (l.cards ?? []).flatMap((c) =>
-      (c.tasks ?? []).map((t) => ({
-        id: t.id,
-        card_id: t.card_id,
-        title: t.title,
-        done: t.done,
-        position: t.position,
-      }))
-    )
-  );
-
-  const initialAssignees = (board.lists ?? []).flatMap((l) =>
-    (l.cards ?? []).flatMap((c) =>
-      (c.card_assignees ?? []).map((a) => ({
-        card_id: c.id,
-        user_id: a.user_id,
-      }))
-    )
-  );
-
-  const initialLabels = board.labels ?? [];
-
-  const initialCardLabels = (board.lists ?? []).flatMap((l) =>
-    (l.cards ?? []).flatMap((c) =>
-      (c.card_labels ?? []).map((cl) => ({
-        card_id: c.id,
-        label_id: cl.label_id,
-      }))
-    )
-  );
+  const { board } = data;
 
   return (
     <>
-      <div className="px-6 py-3 border-b border-slate-800/60 flex items-center justify-between gap-3 text-sm">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="px-3 sm:px-6 py-3 border-b border-slate-800/60 flex items-center justify-between gap-2 sm:gap-3 text-sm">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             href="/dashboard"
-            className="text-slate-400 hover:text-slate-100 transition-colors"
+            className="text-slate-400 hover:text-slate-100 transition-colors hidden sm:inline"
           >
             Dashboard
           </Link>
-          <span className="text-slate-600">/</span>
+          <span className="text-slate-600 hidden sm:inline">/</span>
           <Link
             href={`/workspaces/${board.workspace_id}`}
             className="text-slate-400 hover:text-slate-100 transition-colors truncate"
           >
-            {workspace?.name ?? ''}
+            {board.workspace_name ?? ''}
           </Link>
           <span className="text-slate-600">/</span>
           <RenameBoardTitle
@@ -163,7 +45,7 @@ export default async function BoardPage({
             inputClassName="text-slate-100 font-medium bg-slate-800 border border-slate-600 rounded px-1 -mx-1 focus:outline-none focus:ring-1 focus:ring-violet-400/60 min-w-0"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <InviteDialog boardId={board.id} />
           <BoardMenu
             boardId={board.id}
@@ -174,13 +56,13 @@ export default async function BoardPage({
       </div>
       <BoardClient
         boardId={board.id}
-        initialLists={initialLists}
-        initialCards={initialCards}
-        initialTasks={initialTasks}
-        initialAssignees={initialAssignees}
-        initialMembers={members}
-        initialLabels={initialLabels}
-        initialCardLabels={initialCardLabels}
+        initialLists={data.initialLists}
+        initialCards={data.initialCards}
+        initialTasks={data.initialTasks}
+        initialAssignees={data.initialAssignees}
+        initialMembers={data.initialMembers}
+        initialLabels={data.initialLabels}
+        initialCardLabels={data.initialCardLabels}
       />
     </>
   );
