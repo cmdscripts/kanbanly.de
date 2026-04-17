@@ -18,44 +18,69 @@ export default function DatenschutzPage() {
           </h1>
         </div>
 
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 p-4 mb-6 text-rose-200 text-sm">
-          <strong>Bitte ersetze diesen Text durch einen generierten.</strong>{' '}
-          Datenschutztexte sind rechtsverbindlich — nutze den kostenlosen
-          Generator unter{' '}
-          <a
-            href="https://datenschutz-generator.de"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-rose-100"
-          >
-            datenschutz-generator.de
-          </a>{' '}
-          und paste das Ergebnis hier rein.
-        </div>
-
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 space-y-6 text-sm text-slate-300">
+        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 space-y-6 text-sm text-slate-300 leading-relaxed">
           <section>
             <h2 className="text-base font-semibold text-slate-100 mb-2">
               1. Verantwortlicher
             </h2>
-            <p className="leading-relaxed">
-              [VOR- UND NACHNAME]
+            <p>
+              Verantwortlich für die Verarbeitung personenbezogener Daten im
+              Sinne von Art. 4 Nr. 7 DSGVO ist:
+            </p>
+            <p className="mt-2">
+              Felix Franzen
               <br />
-              [ADRESSE]
+              Am Süllberg 6
               <br />
-              E-Mail: [KONTAKT-E-MAIL]
+              29633 Munster
+              <br />
+              Deutschland
+              <br />
+              E-Mail: felixfranzen2026@gmail.com
             </p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-slate-100 mb-2">
-              2. Verarbeitete Daten
+              2. Welche Daten wir verarbeiten
             </h2>
-            <p className="leading-relaxed">
-              Beim Erstellen eines Kontos verarbeiten wir deine E-Mail-Adresse
-              und ein gehashtes Passwort. Beim Nutzen der App werden
-              Board-Inhalte (Titel, Karten, Listen, Checklisten) und
-              technische Daten (Session-Cookies) verarbeitet.
+            <p>
+              Wir verarbeiten nur die Daten, die wir zum Betrieb der App
+              brauchen:
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>
+                <strong className="text-slate-200">Kontodaten:</strong> deine
+                E-Mail-Adresse und ein gehashtes Passwort.
+              </li>
+              <li>
+                <strong className="text-slate-200">App-Inhalte:</strong> Boards,
+                Listen, Karten, Checklisten und deren Reihenfolge, die du
+                anlegst.
+              </li>
+              <li>
+                <strong className="text-slate-200">
+                  Einladungen und Mitgliedschaften:
+                </strong>{' '}
+                E-Mail-Adressen eingeladener Personen und deren Rollen
+                (Viewer, Editor, Admin) innerhalb von Workspaces und Boards.
+              </li>
+              <li>
+                <strong className="text-slate-200">Session-Cookies:</strong>{' '}
+                technisch notwendige Cookies, um deine Anmeldung aufrecht zu
+                erhalten.
+              </li>
+              <li>
+                <strong className="text-slate-200">Server-Logs:</strong> IP-Adresse,
+                Zeitstempel, angefragte URL, User-Agent — werden maximal 14
+                Tage zur Abwehr von Angriffen gespeichert und danach
+                automatisch gelöscht.
+              </li>
+            </ul>
+            <p className="mt-2">
+              Wir setzen <strong>keine</strong> Analyse-, Tracking- oder
+              Werbe-Tools ein. Keine Google Analytics, kein Meta-Pixel, keine
+              Drittanbieter-Cookies.
             </p>
           </section>
 
@@ -63,39 +88,52 @@ export default function DatenschutzPage() {
             <h2 className="text-base font-semibold text-slate-100 mb-2">
               3. Zwecke und Rechtsgrundlagen
             </h2>
-            <p className="leading-relaxed">
-              Verarbeitung zur Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):
-              Bereitstellen der Kanban-Funktionen. Berechtigtes Interesse
-              (Art. 6 Abs. 1 lit. f DSGVO): sicherer Betrieb der Plattform.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
-              4. Auftragsverarbeiter
-            </h2>
-            <ul className="list-disc list-inside space-y-1 leading-relaxed">
+            <ul className="list-disc list-inside space-y-1">
               <li>
-                <strong className="text-slate-200">Hosting:</strong> [DEIN
-                VPS-ANBIETER], Serverstandort Deutschland
+                <strong className="text-slate-200">
+                  Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):
+                </strong>{' '}
+                Bereitstellung der Kanban-Funktionen, Account-Verwaltung,
+                Einladungs-System.
               </li>
               <li>
                 <strong className="text-slate-200">
-                  Authentifizierung und Datenbank:
+                  Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO):
                 </strong>{' '}
-                Supabase Inc., Region Frankfurt (EU)
+                sicherer und stabiler Betrieb der Plattform (Server-Logs,
+                Abwehr von Missbrauch).
               </li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-slate-100 mb-2">
-              5. Cookies
+              4. Auftragsverarbeiter
             </h2>
-            <p className="leading-relaxed">
-              Wir setzen ausschließlich technisch notwendige Cookies für die
-              Login-Session. Keine Analyse- oder Werbe-Cookies. Keine
-              Drittanbieter-Tracker.
+            <p>
+              Wir nutzen technische Dienstleister, mit denen jeweils ein
+              Auftragsverarbeitungsvertrag (Art. 28 DSGVO) besteht:
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>
+                <strong className="text-slate-200">Supabase Inc.</strong> —
+                Authentifizierung und Datenbank. Serverregion Frankfurt
+                (Deutschland). Daten verlassen die EU nicht.
+              </li>
+              <li>
+                <strong className="text-slate-200">Avoro</strong> — Hosting
+                unseres Web-Servers in Deutschland.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              5. Drittlandsübermittlung
+            </h2>
+            <p>
+              Es findet keine Datenübermittlung in Länder außerhalb der EU /
+              des EWR statt.
             </p>
           </section>
 
@@ -103,30 +141,87 @@ export default function DatenschutzPage() {
             <h2 className="text-base font-semibold text-slate-100 mb-2">
               6. Speicherdauer
             </h2>
-            <p className="leading-relaxed">
-              Kontodaten werden gespeichert, solange dein Konto besteht. Bei
-              Löschung werden alle personenbezogenen Daten entfernt.
-            </p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                Kontodaten und App-Inhalte: bis du dein Konto löschst.
+              </li>
+              <li>
+                Einladungen: 14 Tage nach Versand bzw. sofort nach Annahme.
+              </li>
+              <li>Server-Logs: maximal 14 Tage.</li>
+              <li>
+                Session-Cookies: bis zum Logout bzw. bis zum Ablauf der
+                Session.
+              </li>
+            </ul>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-slate-100 mb-2">
               7. Deine Rechte
             </h2>
-            <p className="leading-relaxed">
-              Du hast jederzeit das Recht auf Auskunft, Berichtigung, Löschung,
-              Einschränkung der Verarbeitung, Datenübertragbarkeit und
-              Widerspruch (Art. 15–21 DSGVO). Schreib uns an [KONTAKT-E-MAIL].
-              Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde
-              beschweren.
+            <p>Du hast jederzeit das Recht auf:</p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Auskunft über deine gespeicherten Daten (Art. 15 DSGVO)</li>
+              <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
+              <li>Löschung deiner Daten (Art. 17 DSGVO)</li>
+              <li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+              <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+              <li>
+                Widerspruch gegen Verarbeitungen auf Grundlage berechtigter
+                Interessen (Art. 21 DSGVO)
+              </li>
+            </ul>
+            <p className="mt-2">
+              Zur Ausübung dieser Rechte reicht eine formlose E-Mail an{' '}
+              <a
+                href="mailto:felixfranzen2026@gmail.com"
+                className="text-violet-300 hover:text-violet-200"
+              >
+                felixfranzen2026@gmail.com
+              </a>
+              .
             </p>
           </section>
 
-          <section className="pt-4 border-t border-slate-800">
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Dies ist nur ein grobes Skelett mit Platzhaltern — für eine
-              vollständige, rechtssichere Datenschutzerklärung nutze bitte
-              einen Generator.
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              8. Beschwerderecht bei der Aufsichtsbehörde
+            </h2>
+            <p>
+              Du hast das Recht, dich bei einer Datenschutz-Aufsichtsbehörde
+              zu beschweren. Zuständig ist in Niedersachsen die
+              Landesbeauftragte für den Datenschutz (
+              <a
+                href="https://lfd.niedersachsen.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-violet-300 hover:text-violet-200"
+              >
+                lfd.niedersachsen.de
+              </a>
+              ).
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              9. Automatisierte Entscheidungsfindung
+            </h2>
+            <p>
+              Es findet keine automatisierte Entscheidungsfindung einschließlich
+              Profiling im Sinne von Art. 22 DSGVO statt.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">
+              10. Änderungen dieser Erklärung
+            </h2>
+            <p>
+              Wir passen diese Datenschutzerklärung an, wenn sich Funktionen
+              oder gesetzliche Anforderungen ändern. Die jeweils aktuelle
+              Fassung findest du stets auf dieser Seite.
             </p>
           </section>
         </div>
