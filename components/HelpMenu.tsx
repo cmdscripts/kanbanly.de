@@ -3,6 +3,12 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { updates } from '@/lib/updates';
 
+function formatDate(iso: string) {
+  const [y, m, d] = iso.split('-');
+  if (!y || !m || !d) return iso;
+  return `${d}.${m}.${y}`;
+}
+
 export function HelpMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -56,7 +62,7 @@ export function HelpMenu() {
                     {u.title}
                   </span>
                   <span className="text-[10px] text-slate-500 tabular-nums shrink-0">
-                    {u.date}
+                    {formatDate(u.date)}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 leading-snug">

@@ -29,7 +29,7 @@ export function WorkspaceMenu({ workspaceId, workspaceName }: Props) {
             });
             if (!ok) return;
             await deleteWorkspace(workspaceId);
-            router.push('/');
+            router.push('/dashboard');
           },
         },
       ]}

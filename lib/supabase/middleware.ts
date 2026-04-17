@@ -10,6 +10,8 @@ const PUBLIC_PREFIXES = [
   '/datenschutz',
 ];
 
+const PUBLIC_EXACT = ['/'];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -39,7 +41,9 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+  const isPublic =
+    PUBLIC_EXACT.includes(pathname) ||
+    PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
@@ -50,7 +54,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && (pathname === '/login' || pathname === '/register')) {
     const url = request.nextUrl.clone();
-    url.pathname = '/';
+    url.pathname = '/dashboard';
     url.search = '';
     return NextResponse.redirect(url);
   }

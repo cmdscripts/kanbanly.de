@@ -25,7 +25,10 @@ export default async function WorkspacePage({
     <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-          <Link href="/" className="hover:text-slate-200 transition-colors">
+          <Link
+            href="/dashboard"
+            className="hover:text-slate-200 transition-colors"
+          >
             Dashboard
           </Link>
           <span className="text-slate-700">/</span>

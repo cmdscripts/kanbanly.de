@@ -22,7 +22,7 @@ export async function Nav() {
 
   return (
     <header className="px-6 py-3 border-b border-slate-800/60 backdrop-blur-sm flex items-center justify-between">
-      <Link href="/" className="flex flex-col group">
+      <Link href="/dashboard" className="flex flex-col group">
         <h1 className="text-base font-semibold text-slate-100 tracking-tight leading-none group-hover:text-violet-200 transition-colors">
           kanbanly
         </h1>

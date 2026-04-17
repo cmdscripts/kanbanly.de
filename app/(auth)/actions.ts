@@ -9,7 +9,8 @@ function siteUrl() {
 export async function login(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
-  const next = String(formData.get('next') ?? '/') || '/';
+  const next =
+    String(formData.get('next') ?? '/dashboard') || '/dashboard';
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -17,7 +18,7 @@ export async function login(formData: FormData) {
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
-  redirect(next.startsWith('/') ? next : '/');
+  redirect(next.startsWith('/') ? next : '/dashboard');
 }
 
 const USERNAME_RE = /^[a-z0-9_-]{3,20}$/;

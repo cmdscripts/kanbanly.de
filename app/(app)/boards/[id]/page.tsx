@@ -143,7 +143,7 @@ export default async function BoardPage({
       <div className="px-6 py-3 border-b border-slate-800/60 flex items-center justify-between gap-3 text-sm">
         <div className="flex items-center gap-3 min-w-0">
           <Link
-            href="/"
+            href="/dashboard"
             className="text-slate-400 hover:text-slate-100 transition-colors"
           >
             Dashboard

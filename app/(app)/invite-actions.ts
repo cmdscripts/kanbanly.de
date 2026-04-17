@@ -69,7 +69,7 @@ export async function acceptInvite(formData: FormData) {
     );
   }
 
-  redirect(data ? `/boards/${data}` : '/');
+  redirect(data ? `/boards/${data}` : '/dashboard');
 }
 
 export async function switchAccountForInvite(formData: FormData) {

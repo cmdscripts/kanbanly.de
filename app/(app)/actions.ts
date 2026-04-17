@@ -8,7 +8,7 @@ export async function renameWorkspace(id: string, name: string) {
   if (!id || !trimmed) return;
   const supabase = await createClient();
   await supabase.from('workspaces').update({ name: trimmed }).eq('id', id);
-  revalidatePath('/');
+  revalidatePath('/dashboard');
   revalidatePath(`/workspaces/${id}`);
 }
 
@@ -18,26 +18,26 @@ export async function renameBoard(id: string, name: string) {
   const supabase = await createClient();
   await supabase.from('boards').update({ name: trimmed }).eq('id', id);
   revalidatePath(`/boards/${id}`);
-  revalidatePath('/');
+  revalidatePath('/dashboard');
 }
 
 export async function deleteBoard(id: string) {
   if (!id) return;
   const supabase = await createClient();
   await supabase.from('boards').delete().eq('id', id);
-  revalidatePath('/');
+  revalidatePath('/dashboard');
 }
 
 export async function deleteWorkspace(id: string) {
   if (!id) return;
   const supabase = await createClient();
   await supabase.from('workspaces').delete().eq('id', id);
-  revalidatePath('/');
+  revalidatePath('/dashboard');
 }
 
 export async function createWorkspace(formData: FormData) {
   const name = String(formData.get('name') ?? '').trim();
-  if (!name) redirect('/?error=Name%20fehlt');
+  if (!name) redirect('/dashboard?error=Name%20fehlt');
 
   const supabase = await createClient();
   const {
@@ -49,15 +49,16 @@ export async function createWorkspace(formData: FormData) {
     .from('workspaces')
     .insert({ name, owner_id: user.id });
 
-  if (error) redirect(`/?error=${encodeURIComponent(error.message)}`);
-  revalidatePath('/');
-  redirect('/');
+  if (error) redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
 }
 
 export async function createBoard(formData: FormData) {
   const name = String(formData.get('name') ?? '').trim();
   const workspace_id = String(formData.get('workspace_id') ?? '');
-  if (!name || !workspace_id) redirect('/?error=Board-Daten%20unvollständig');
+  if (!name || !workspace_id)
+    redirect('/dashboard?error=Board-Daten%20unvollständig');
 
   const supabase = await createClient();
   const {
@@ -71,7 +72,7 @@ export async function createBoard(formData: FormData) {
     .select('id')
     .single();
 
-  if (error) redirect(`/?error=${encodeURIComponent(error.message)}`);
-  revalidatePath('/');
+  if (error) redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
+  revalidatePath('/dashboard');
   redirect(`/boards/${data.id}`);
 }

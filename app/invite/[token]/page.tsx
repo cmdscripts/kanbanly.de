@@ -58,7 +58,7 @@ export default async function InvitePage({
                 Diese Einladung wurde schon verwendet.
               </p>
               <Link
-                href="/"
+                href="/dashboard"
                 className="inline-block rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-4 py-2"
               >
                 Zum Dashboard
