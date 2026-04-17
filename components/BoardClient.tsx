@@ -97,12 +97,8 @@ export function BoardClient({
     };
 
     const schedule = (payload: unknown) => {
-      console.log('[realtime] event', payload);
       if (debounce) clearTimeout(debounce);
-      debounce = setTimeout(() => {
-        console.log('[realtime] refetch fired');
-        refetch();
-      }, REFETCH_DEBOUNCE_MS);
+      debounce = setTimeout(refetch, REFETCH_DEBOUNCE_MS);
     };
 
     const channel = supabase.channel(`board-${boardId}`);
@@ -113,13 +109,25 @@ export function BoardClient({
         schedule
       );
     }
-    channel.subscribe((status, err) => {
-      console.log('[realtime] subscribe status:', status, err ?? '');
-    });
+
+    const { data: authSub } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        supabase.realtime.setAuth(session?.access_token ?? null);
+      }
+    );
+
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      supabase.realtime.setAuth(session?.access_token ?? null);
+      if (!cancelled) channel.subscribe();
+    })();
 
     return () => {
       cancelled = true;
       if (debounce) clearTimeout(debounce);
+      authSub.subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, [boardId]);
