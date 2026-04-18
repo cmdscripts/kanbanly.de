@@ -60,13 +60,13 @@ export default async function RegisterPage({
             required
             minLength={3}
             maxLength={20}
-            pattern="[a-z0-9_-]{3,20}"
+            pattern="[a-zA-Z0-9_-]{3,20}"
             autoComplete="username"
-            placeholder="z. B. felix_f"
-            className="w-full rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60 lowercase"
+            placeholder="z. B. Felix_F"
+            className="w-full rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
           />
           <p className="text-[11px] text-slate-500 mt-1">
-            3–20 Zeichen: a–z, 0–9, _ und -
+            3–20 Zeichen: Buchstaben, Ziffern, _ und - (Groß-/Kleinschreibung egal für Uniqueness)
           </p>
         </div>
         <div>

@@ -21,17 +21,17 @@ export async function login(formData: FormData) {
   redirect(next.startsWith('/') ? next : '/dashboard');
 }
 
-const USERNAME_RE = /^[a-z0-9_-]{3,20}$/;
+const USERNAME_RE = /^[a-zA-Z0-9_-]{3,20}$/;
 
 export async function register(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
-  const username = String(formData.get('username') ?? '').trim().toLowerCase();
+  const username = String(formData.get('username') ?? '').trim();
 
   if (!USERNAME_RE.test(username)) {
     redirect(
       `/register?error=${encodeURIComponent(
-        'Benutzername: 3–20 Zeichen, nur a–z, 0–9, _ und -'
+        'Benutzername: 3–20 Zeichen, nur Buchstaben, Ziffern, _ und -'
       )}`
     );
   }
