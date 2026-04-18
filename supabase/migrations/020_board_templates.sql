@@ -248,7 +248,7 @@ begin
       (t_id, 'Veröffentlicht', 3) returning id into l_done;
 
     insert into public.template_cards (template_id, list_id, title, description, position, label_ids) values
-      (t_id, l_todo, 'Themen-Brainstorm', 'Sammle erstmal alle Ideen — filtern kommt später.', 0, null),
+      (t_id, l_todo, 'Themen-Brainstorm', 'Sammle erstmal alle Ideen — filtern kommt später.', 0, array[]::uuid[]),
       (t_id, l_todo, 'Launch-Ankündigung', null, 1, array[lbl_feature, lbl_bug]);
   end if;
 
