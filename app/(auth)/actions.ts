@@ -1,9 +1,25 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import {
+  translateAuthError,
+  validateEmail,
+  validatePassword,
+  validateUsername,
+} from '@/lib/authErrors';
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+}
+
+function redirectLogin(message: string, next?: string) {
+  const params = new URLSearchParams({ error: message });
+  if (next) params.set('next', next);
+  redirect(`/login?${params.toString()}`);
+}
+
+function redirectRegister(message: string) {
+  redirect(`/register?error=${encodeURIComponent(message)}`);
 }
 
 export async function login(formData: FormData) {
@@ -12,29 +28,32 @@ export async function login(formData: FormData) {
   const next =
     String(formData.get('next') ?? '/dashboard') || '/dashboard';
 
+  const emailError = validateEmail(email);
+  if (emailError) redirectLogin(emailError, next);
+  if (!password) redirectLogin('Bitte gib dein Passwort ein.', next);
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    redirectLogin(translateAuthError(error.message), next);
   }
   redirect(next.startsWith('/') ? next : '/dashboard');
 }
-
-const USERNAME_RE = /^[a-zA-Z0-9_-]{3,20}$/;
 
 export async function register(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
   const username = String(formData.get('username') ?? '').trim();
 
-  if (!USERNAME_RE.test(username)) {
-    redirect(
-      `/register?error=${encodeURIComponent(
-        'Benutzername: 3–20 Zeichen, nur Buchstaben, Ziffern, _ und -'
-      )}`
-    );
-  }
+  const usernameError = validateUsername(username);
+  if (usernameError) redirectRegister(usernameError);
+
+  const emailError = validateEmail(email);
+  if (emailError) redirectRegister(emailError);
+
+  const passwordError = validatePassword(password);
+  if (passwordError) redirectRegister(passwordError);
 
   const supabase = await createClient();
 
@@ -42,8 +61,8 @@ export async function register(formData: FormData) {
     u: username,
   });
   if (taken) {
-    redirect(
-      `/register?error=${encodeURIComponent('Benutzername ist bereits vergeben')}`
+    redirectRegister(
+      `Der Benutzername „${username}" ist schon vergeben. Wähl einen anderen.`
     );
   }
 
@@ -57,7 +76,7 @@ export async function register(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/register?error=${encodeURIComponent(error.message)}`);
+    redirectRegister(translateAuthError(error.message));
   }
   redirect('/register?sent=1');
 }
