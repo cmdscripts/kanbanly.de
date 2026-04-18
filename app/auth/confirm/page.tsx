@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { confirmEmail } from './actions';
 
 type SearchParams = {
+  code?: string;
   token_hash?: string;
   type?: string;
   next?: string;
@@ -12,9 +13,12 @@ export default async function ConfirmPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { token_hash, type, next } = await searchParams;
+  const { code, token_hash, type, next } = await searchParams;
 
-  if (!token_hash || !type) {
+  const hasLegacy = token_hash && type;
+  const hasPkce = !!code;
+
+  if (!hasLegacy && !hasPkce) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md rounded-2xl bg-surface/60 backdrop-blur-md border border-line/80 p-6 shadow-xl shadow-black/20 text-center">
@@ -47,8 +51,13 @@ export default async function ConfirmPage({
         </p>
 
         <form action={confirmEmail}>
-          <input type="hidden" name="token_hash" value={token_hash} />
-          <input type="hidden" name="type" value={type} />
+          {hasPkce && <input type="hidden" name="code" value={code} />}
+          {hasLegacy && (
+            <>
+              <input type="hidden" name="token_hash" value={token_hash} />
+              <input type="hidden" name="type" value={type} />
+            </>
+          )}
           {next && <input type="hidden" name="next" value={next} />}
           <button
             type="submit"
@@ -60,7 +69,7 @@ export default async function ConfirmPage({
 
         <p className="mt-5 text-[11px] text-subtle leading-relaxed">
           Der Link wird erst durch deinen Klick aktiviert. So verhindern wir,
-          dass Spam-Scanner deines E-Mail-Anbieters den Link vorab verbrauchen.
+          dass Spam-Scanner deines E-Mail-Anbieters den Token vorab verbrauchen.
         </p>
       </div>
     </main>
