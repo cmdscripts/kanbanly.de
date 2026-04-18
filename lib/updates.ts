@@ -7,6 +7,12 @@ export type Update = {
 export const updates: Update[] = [
   {
     date: '2026-04-18',
+    title: 'Global-Search mit ⌘K',
+    description:
+      'Drück ⌘K (oder Strg+K) irgendwo in der App — Boards, Karten, Workspaces und Quick-Actions in einer Palette. Mit „?" siehst du alle Shortcuts.',
+  },
+  {
+    date: '2026-04-18',
     title: 'Board-Templates + Community',
     description:
       'Starte Boards aus kuratierten Templates (Sprint, Content-Kalender, GTD). Speichere eigene als Template — privat oder öffentlich für die Community.',

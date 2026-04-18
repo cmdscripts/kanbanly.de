@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { logout } from '@/app/(auth)/actions';
 import { HelpMenu } from './HelpMenu';
+import { SearchButton } from './SearchButton';
 
 export async function Nav() {
   const supabase = await createClient();
@@ -34,6 +35,7 @@ export async function Nav() {
       <div className="flex items-center gap-3">
         {user && (
           <>
+            <SearchButton />
             <Link
               href="/meine-karten"
               className="text-xs text-fg-soft hover:text-fg transition-colors hidden sm:inline"
