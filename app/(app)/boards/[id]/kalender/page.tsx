@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { BoardClient } from '@/components/BoardClient';
+import { CalendarClient } from '@/components/CalendarClient';
 import { BoardMenu } from '@/components/BoardMenu';
 import { BoardTabs } from '@/components/BoardTabs';
 import { InviteDialog } from '@/components/InviteDialog';
@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { fetchBoardData } from '@/lib/boardData';
 import { isUuid } from '@/lib/slug';
 
-export default async function BoardPage({
+export default async function BoardCalendarPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -23,7 +23,7 @@ export default async function BoardPage({
   const { board } = data;
 
   if (isUuid(id) && board.slug !== id) {
-    redirect(`/boards/${board.slug}`);
+    redirect(`/boards/${board.slug}/kalender`);
   }
 
   return (
@@ -60,8 +60,8 @@ export default async function BoardPage({
           />
         </div>
       </div>
-      <BoardTabs boardSlug={board.slug} active="board" />
-      <BoardClient
+      <BoardTabs boardSlug={board.slug} active="calendar" />
+      <CalendarClient
         boardId={board.id}
         initialLists={data.initialLists}
         initialCards={data.initialCards}

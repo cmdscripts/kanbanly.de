@@ -6,6 +6,7 @@ import { Avatar } from './Avatar';
 import { LabelsPicker } from './LabelsPicker';
 import { DescriptionEditor } from './DescriptionEditor';
 import { ActivityLog } from './ActivityLog';
+import { CardComments } from './CardComments';
 
 export function CardModal() {
   const openCardId = useBoard((s) => s.openCardId);
@@ -290,6 +291,13 @@ export function CardModal() {
               Hinzufügen
             </button>
           </form>
+        </section>
+
+        <section className="p-5 border-b border-slate-800">
+          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Kommentare
+          </h3>
+          <CardComments cardId={openCardId} />
         </section>
 
         <section className="p-5 border-b border-slate-800">

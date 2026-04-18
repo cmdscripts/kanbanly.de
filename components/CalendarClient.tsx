@@ -1,7 +1,7 @@
 'use client';
 import { type MemberProfile } from '@/store/boardStore';
 import { useBoardSync } from '@/lib/useBoardSync';
-import Board from './Board';
+import { Calendar } from './Calendar';
 import { CardModal } from './CardModal';
 
 type Props = {
@@ -33,12 +33,12 @@ type Props = {
   initialCardLabels: Array<{ card_id: string; label_id: string }>;
 };
 
-export function BoardClient(props: Props) {
+export function CalendarClient(props: Props) {
   useBoardSync(props);
 
   return (
     <>
-      <Board />
+      <Calendar />
       <CardModal />
     </>
   );
