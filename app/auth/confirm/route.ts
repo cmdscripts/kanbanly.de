@@ -2,7 +2,12 @@ import type { EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+function siteBase() {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+}
+
 export async function GET(request: NextRequest) {
+  const base = siteBase();
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
@@ -12,11 +17,11 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
-      return NextResponse.redirect(new URL(next, request.url));
+      return NextResponse.redirect(new URL(next, base));
     }
   }
 
   return NextResponse.redirect(
-    new URL('/login?error=Bestätigungslink%20ungültig', request.url)
+    new URL('/login?error=Bestätigungslink%20ungültig', base)
   );
 }
