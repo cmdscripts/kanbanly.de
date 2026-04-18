@@ -29,24 +29,24 @@ export function ConfirmDialog() {
       onClick={() => close(false)}
     >
       <div
-        className="w-full max-w-sm rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden"
+        className="w-full max-w-sm rounded-2xl bg-surface border border-line shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         <div className="p-5">
-          <h2 className="text-base font-semibold text-slate-100">{title}</h2>
+          <h2 className="text-base font-semibold text-fg">{title}</h2>
           {description && (
-            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+            <p className="text-sm text-muted mt-2 leading-relaxed">
               {description}
             </p>
           )}
         </div>
-        <div className="px-5 py-3 bg-slate-950/40 border-t border-slate-800 flex justify-end gap-2">
+        <div className="px-5 py-3 bg-bg/40 border-t border-line flex justify-end gap-2">
           <button
             type="button"
             onClick={() => close(false)}
-            className="rounded-lg px-4 py-1.5 text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+            className="rounded-lg px-4 py-1.5 text-sm text-fg-soft hover:text-fg hover:bg-elev transition-colors"
             autoFocus
           >
             {cancelLabel}
@@ -57,7 +57,7 @@ export function ConfirmDialog() {
             className={`rounded-lg px-4 py-1.5 text-sm font-medium text-white transition-colors ${
               danger
                 ? 'bg-rose-500/90 hover:bg-rose-500'
-                : 'bg-violet-500/90 hover:bg-violet-400'
+                : 'bg-accent/90 hover:bg-accent-hover'
             }`}
           >
             {confirmLabel}

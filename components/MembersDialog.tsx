@@ -166,7 +166,7 @@ export function MembersDialog({ boardId }: { boardId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg border border-slate-700 hover:border-violet-400/60 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-medium px-3 py-1.5 transition-colors"
+        className="rounded-lg border border-line-strong hover:border-accent-hover/60 bg-elev/60 hover:bg-elev text-fg-soft hover:text-white text-xs font-medium px-3 py-1.5 transition-colors"
       >
         Mitglieder
       </button>
@@ -180,19 +180,19 @@ export function MembersDialog({ boardId }: { boardId: string }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg mt-10 mb-10 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl"
+        className="w-full max-w-lg mt-10 mb-10 rounded-2xl bg-surface border border-line shadow-2xl"
       >
-        <div className="px-5 pt-5 pb-4 border-b border-slate-800 flex items-start justify-between">
+        <div className="px-5 pt-5 pb-4 border-b border-line flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Mitglieder</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-lg font-semibold text-fg">Mitglieder</h2>
+            <p className="text-xs text-muted mt-0.5">
               Rollen ändern, Board-Gäste entfernen, neue Einladungen erstellen.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="text-slate-500 hover:text-slate-200 text-xl leading-none"
+            className="text-subtle hover:text-fg-soft text-xl leading-none"
             aria-label="Schließen"
           >
             ×
@@ -200,36 +200,36 @@ export function MembersDialog({ boardId }: { boardId: string }) {
         </div>
 
         {actionError && (
-          <div className="mx-5 mt-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs px-3 py-2">
+          <div className="mx-5 mt-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-200 text-xs px-3 py-2">
             {actionError}
           </div>
         )}
 
-        <section className="p-5 border-b border-slate-800">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-3">
             Aktuelle Mitglieder
           </h3>
           {members === null ? (
-            <p className="text-xs text-slate-500 font-mono">Lädt…</p>
+            <p className="text-xs text-subtle font-mono">Lädt…</p>
           ) : members.length === 0 ? (
-            <p className="text-xs text-slate-500">Noch niemand.</p>
+            <p className="text-xs text-subtle">Noch niemand.</p>
           ) : (
             <ul className="space-y-2">
               {members.map((m) => (
                 <li
                   key={m.user_id}
-                  className="flex items-center gap-3 rounded-lg bg-slate-800/50 border border-slate-800 px-3 py-2"
+                  className="flex items-center gap-3 rounded-lg bg-elev/50 border border-line px-3 py-2"
                 >
                   <Avatar username={m.username} size="sm" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-slate-100 truncate">
+                    <div className="text-sm text-fg truncate">
                       @{m.username ?? 'user'}
                     </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
+                    <div className="text-[10px] text-subtle mt-0.5">
                       {m.source === 'workspace' ? (
                         <span>
                           Workspace-Mitglied
-                          <span className="mx-1 text-slate-700">·</span>
+                          <span className="mx-1 text-faint">·</span>
                           {ROLE_LABELS[m.role] ?? m.role}
                         </span>
                       ) : (
@@ -247,7 +247,7 @@ export function MembersDialog({ boardId }: { boardId: string }) {
                             e.target.value as 'viewer' | 'editor' | 'admin'
                           )
                         }
-                        className="rounded-md bg-slate-800 border border-slate-700 text-[11px] text-slate-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+                        className="rounded-md bg-elev border border-line-strong text-[11px] text-fg-soft px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
                       >
                         {BOARD_ROLES.map((r) => (
                           <option key={r.value} value={r.value}>
@@ -258,14 +258,14 @@ export function MembersDialog({ boardId }: { boardId: string }) {
                       <button
                         type="button"
                         onClick={() => handleRemove(m)}
-                        className="text-[11px] text-slate-400 hover:text-rose-400 transition-colors"
+                        className="text-[11px] text-muted hover:text-rose-600 dark:text-rose-400 transition-colors"
                       >
                         Entfernen
                       </button>
                     </>
                   ) : (
                     <span
-                      className="text-[10px] text-slate-500 italic"
+                      className="text-[10px] text-subtle italic"
                       title="Zugriff über den Workspace — dort verwalten"
                     >
                       über Workspace
@@ -278,25 +278,25 @@ export function MembersDialog({ boardId }: { boardId: string }) {
         </section>
 
         <section className="p-5">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-3">
             Neue Einladung
           </h3>
           {inviteState?.ok ? (
             <div className="space-y-3">
-              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 text-xs px-3 py-2">
+              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs px-3 py-2">
                 Einladung erstellt. Kopier den Link und schick ihn der Person.
               </div>
               <div className="flex gap-2">
                 <input
                   readOnly
                   value={inviteState.url}
-                  className="flex-1 rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+                  className="flex-1 rounded-lg bg-elev border border-line-strong px-3 py-2 text-xs text-fg-soft font-mono focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
                   onFocus={(e) => e.currentTarget.select()}
                 />
                 <button
                   type="button"
                   onClick={() => copyLink(inviteState.url)}
-                  className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-xs font-medium px-4 py-2 transition-colors"
+                  className="rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-xs font-medium px-4 py-2 transition-colors"
                 >
                   {copied ? 'Kopiert ✓' : 'Kopieren'}
                 </button>
@@ -306,7 +306,7 @@ export function MembersDialog({ boardId }: { boardId: string }) {
             <form action={inviteAction} className="space-y-3">
               <input type="hidden" name="board_id" value={boardId} />
               {inviteState && !inviteState.ok && (
-                <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs px-3 py-2">
+                <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-200 text-xs px-3 py-2">
                   {inviteState.error}
                 </div>
               )}
@@ -316,12 +316,12 @@ export function MembersDialog({ boardId }: { boardId: string }) {
                   type="email"
                   required
                   placeholder="kollege@firma.de"
-                  className="flex-1 rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+                  className="flex-1 rounded-lg bg-elev border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
                 />
                 <select
                   name="role"
                   defaultValue="editor"
-                  className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+                  className="rounded-lg bg-elev border border-line-strong px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="editor">Editor</option>
@@ -331,7 +331,7 @@ export function MembersDialog({ boardId }: { boardId: string }) {
               <button
                 type="submit"
                 disabled={invitePending}
-                className="w-full rounded-lg bg-violet-500/90 hover:bg-violet-400 disabled:opacity-60 text-white text-sm font-medium py-2 transition-colors"
+                className="w-full rounded-lg bg-accent/90 hover:bg-accent-hover disabled:opacity-60 text-white text-sm font-medium py-2 transition-colors"
               >
                 {invitePending ? 'Erstelle…' : 'Einladungs-Link erstellen'}
               </button>

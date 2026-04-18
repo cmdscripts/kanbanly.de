@@ -106,12 +106,12 @@ const ROWS: Row[] = [
 
 function Cell({ value }: { value: string | boolean }) {
   if (value === true) {
-    return <span className="text-emerald-300 font-medium">Ja</span>;
+    return <span className="text-emerald-700 dark:text-emerald-300 font-medium">Ja</span>;
   }
   if (value === false) {
-    return <span className="text-rose-300/80">Nein</span>;
+    return <span className="text-rose-700 dark:text-rose-300/80">Nein</span>;
   }
-  return <span className="text-slate-300">{value}</span>;
+  return <span className="text-fg-soft">{value}</span>;
 }
 
 export default async function TrelloAlternativePage() {
@@ -130,10 +130,10 @@ export default async function TrelloAlternativePage() {
 
       <header className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <Link href="/" className="flex flex-col group">
-          <h1 className="text-base font-semibold text-slate-100 tracking-tight leading-none group-hover:text-violet-200 transition-colors">
+          <h1 className="text-base font-semibold text-fg tracking-tight leading-none group-hover:text-accent-hover transition-colors">
             kanbanly
           </h1>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-[11px] text-subtle mt-0.5">
             Flow first. Build fast.
           </p>
         </Link>
@@ -141,7 +141,7 @@ export default async function TrelloAlternativePage() {
           {signedIn ? (
             <Link
               href="/dashboard"
-              className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-xs font-medium px-3 py-1.5 transition-colors"
+              className="rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-xs font-medium px-3 py-1.5 transition-colors"
             >
               Zum Dashboard
             </Link>
@@ -149,13 +149,13 @@ export default async function TrelloAlternativePage() {
             <>
               <Link
                 href="/login"
-                className="text-xs text-slate-300 hover:text-slate-100 transition-colors"
+                className="text-xs text-fg-soft hover:text-fg transition-colors"
               >
                 Anmelden
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-slate-100 text-xs px-3 py-1.5 transition-colors"
+                className="rounded-lg border border-line-strong hover:border-fg-soft bg-elev/60 hover:bg-elev text-fg-soft hover:text-fg text-xs px-3 py-1.5 transition-colors"
               >
                 Registrieren
               </Link>
@@ -168,17 +168,17 @@ export default async function TrelloAlternativePage() {
       <main className="flex-1 flex flex-col">
         <section className="px-4 sm:px-6 pt-12 pb-10 sm:pt-20 sm:pb-14">
           <div className="max-w-3xl mx-auto">
-            <p className="text-xs font-medium text-violet-300 uppercase tracking-wider mb-3">
+            <p className="text-xs font-medium text-accent-soft uppercase tracking-wider mb-3">
               Trello-Alternative
             </p>
-            <h2 className="text-3xl sm:text-5xl font-semibold text-slate-100 tracking-tight leading-tight mb-5">
+            <h2 className="text-3xl sm:text-5xl font-semibold text-fg tracking-tight leading-tight mb-5">
               Die schlanke Kanban-Alternative —{' '}
               <span className="bg-gradient-to-r from-violet-300 to-emerald-300 bg-clip-text text-transparent">
                 auf Deutsch
               </span>
               .
             </h2>
-            <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-2xl">
+            <p className="text-base sm:text-lg text-muted leading-relaxed max-w-2xl">
               Kanbanly ist ein minimalistisches Kanban-Tool für Selbstständige
               und kleine Teams, die ihr Projektmanagement ohne Ballast und ohne
               Werbung machen wollen. DSGVO-konform, aus Deutschland,
@@ -187,13 +187,13 @@ export default async function TrelloAlternativePage() {
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <Link
                 href={signedIn ? '/dashboard' : '/register'}
-                className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-5 py-2.5 transition-colors shadow-lg shadow-violet-500/20 text-center"
+                className="rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 transition-colors shadow-lg shadow-violet-500/20 text-center"
               >
                 {signedIn ? 'Zum Dashboard' : 'Konto erstellen — kostenlos'}
               </Link>
               <Link
                 href="/"
-                className="rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/40 hover:bg-slate-800 text-slate-200 text-sm px-5 py-2.5 transition-colors text-center"
+                className="rounded-lg border border-line-strong hover:border-fg-soft bg-elev/40 hover:bg-elev text-fg-soft text-sm px-5 py-2.5 transition-colors text-center"
               >
                 Zur Landing
               </Link>
@@ -203,15 +203,15 @@ export default async function TrelloAlternativePage() {
 
         <section className="px-4 sm:px-6 pb-12">
           <div className="max-w-3xl mx-auto">
-            <h3 className="text-xl font-semibold text-slate-100 mb-4">
+            <h3 className="text-xl font-semibold text-fg mb-4">
               Wann Kanbanly passt — wann nicht
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-5">
-                <h4 className="text-sm font-semibold text-emerald-300 mb-2">
+              <div className="rounded-xl bg-surface/60 border border-line/80 p-5">
+                <h4 className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">
                   Passt, wenn du …
                 </h4>
-                <ul className="text-sm text-slate-300 space-y-1.5 leading-relaxed">
+                <ul className="text-sm text-fg-soft space-y-1.5 leading-relaxed">
                   <li>als Solo-Dev, Freelancer oder Kleinteam arbeitest</li>
                   <li>ein schnelles, schlichtes Board willst</li>
                   <li>deutschsprachige Oberfläche brauchst</li>
@@ -219,11 +219,11 @@ export default async function TrelloAlternativePage() {
                   <li>ohne Monats-Abo starten willst</li>
                 </ul>
               </div>
-              <div className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-5">
-                <h4 className="text-sm font-semibold text-rose-300 mb-2">
+              <div className="rounded-xl bg-surface/60 border border-line/80 p-5">
+                <h4 className="text-sm font-semibold text-rose-700 dark:text-rose-300 mb-2">
                   Passt nicht, wenn du …
                 </h4>
-                <ul className="text-sm text-slate-300 space-y-1.5 leading-relaxed">
+                <ul className="text-sm text-fg-soft space-y-1.5 leading-relaxed">
                   <li>Gantt-Diagramme, Timelines oder OKRs brauchst</li>
                   <li>Integrationen mit Jira, Slack, Confluence erwartest</li>
                   <li>ein Team mit 50+ Personen koordinierst</li>
@@ -236,31 +236,31 @@ export default async function TrelloAlternativePage() {
 
         <section className="px-4 sm:px-6 pb-12">
           <div className="max-w-3xl mx-auto">
-            <h3 className="text-xl font-semibold text-slate-100 mb-1">
+            <h3 className="text-xl font-semibold text-fg mb-1">
               Kanbanly vs Trello im Überblick
             </h3>
-            <p className="text-xs text-slate-500 mb-5">
+            <p className="text-xs text-subtle mb-5">
               Ehrliche Gegenüberstellung. Kein Trello-Bashing, nur Fakten.
             </p>
-            <div className="overflow-x-auto rounded-xl bg-slate-900/60 border border-slate-800/80">
+            <div className="overflow-x-auto rounded-xl bg-surface/60 border border-line/80">
               <table className="w-full text-sm">
-                <thead className="border-b border-slate-800">
+                <thead className="border-b border-line">
                   <tr>
-                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-subtle uppercase tracking-wide">
                       Funktion
                     </th>
-                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-violet-300 uppercase tracking-wide">
+                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-accent-soft uppercase tracking-wide">
                       Kanbanly
                     </th>
-                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-subtle uppercase tracking-wide">
                       Trello (Free)
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-line">
                   {ROWS.map((r) => (
                     <tr key={r.feature}>
-                      <td className="px-4 py-3 text-slate-200">{r.feature}</td>
+                      <td className="px-4 py-3 text-fg-soft">{r.feature}</td>
                       <td className="px-4 py-3">
                         <Cell value={r.kanbanly} />
                       </td>
@@ -272,7 +272,7 @@ export default async function TrelloAlternativePage() {
                 </tbody>
               </table>
             </div>
-            <p className="text-[11px] text-slate-600 mt-2">
+            <p className="text-[11px] text-faint mt-2">
               Stand: April 2026. Angaben zu Trello basieren auf dem offiziellen
               Free-Plan von Atlassian und können sich ändern.
             </p>
@@ -281,10 +281,10 @@ export default async function TrelloAlternativePage() {
 
         <section className="px-4 sm:px-6 pb-12">
           <div className="max-w-3xl mx-auto">
-            <h3 className="text-xl font-semibold text-slate-100 mb-5">
+            <h3 className="text-xl font-semibold text-fg mb-5">
               Warum eine deutsche Alternative überhaupt?
             </h3>
-            <div className="space-y-4 text-sm text-slate-300 leading-relaxed">
+            <div className="space-y-4 text-sm text-fg-soft leading-relaxed">
               <p>
                 Trello hat Kanban-Boards 2011 populär gemacht und macht einen
                 guten Job für Teams, die den Atlassian-Stack sowieso nutzen.
@@ -293,7 +293,7 @@ export default async function TrelloAlternativePage() {
                 Daten in den USA, Upsells zum Premium-Plan.
               </p>
               <p>
-                <strong className="text-slate-100">Kanbanly</strong> verzichtet
+                <strong className="text-fg">Kanbanly</strong> verzichtet
                 bewusst auf Marketplace-Ecosystem, Enterprise-Features und
                 Monetarisierungs-Druck. Stattdessen: schneller
                 Karten-Workflow, Realtime-Sync zwischen Sessions, Markdown in
@@ -303,7 +303,7 @@ export default async function TrelloAlternativePage() {
               </p>
               <p>
                 Die Infrastruktur läuft auf{' '}
-                <span className="font-mono text-xs text-slate-400">
+                <span className="font-mono text-xs text-muted">
                   Supabase (Frankfurt)
                 </span>{' '}
                 und einem deutschen VPS. Der Code liegt öffentlich auf GitHub —
@@ -314,17 +314,17 @@ export default async function TrelloAlternativePage() {
         </section>
 
         <section className="px-4 sm:px-6 pb-20 sm:pb-24">
-          <div className="max-w-3xl mx-auto rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 sm:p-8 text-center">
-            <h3 className="text-xl font-semibold text-slate-100 mb-2">
+          <div className="max-w-3xl mx-auto rounded-2xl bg-surface/60 border border-line/80 p-6 sm:p-8 text-center">
+            <h3 className="text-xl font-semibold text-fg mb-2">
               Ausprobieren kostet nichts
             </h3>
-            <p className="text-sm text-slate-400 mb-5 max-w-md mx-auto">
+            <p className="text-sm text-muted mb-5 max-w-md mx-auto">
               Leg in unter einer Minute deinen ersten Workspace an. Keine
               Kreditkarte, keine Trial-Beschränkung.
             </p>
             <Link
               href={signedIn ? '/dashboard' : '/register'}
-              className="inline-block rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-5 py-2.5 transition-colors"
+              className="inline-block rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 transition-colors"
             >
               {signedIn ? 'Zum Dashboard' : 'Konto erstellen'}
             </Link>

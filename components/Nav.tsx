@@ -21,12 +21,12 @@ export async function Nav() {
   const displayName = username ? `@${username}` : user?.email ?? '';
 
   return (
-    <header className="px-6 py-3 border-b border-slate-800/60 backdrop-blur-sm flex items-center justify-between">
+    <header className="px-6 py-3 border-b border-line/60 backdrop-blur-sm flex items-center justify-between">
       <Link href="/dashboard" className="flex flex-col group">
-        <h1 className="text-base font-semibold text-slate-100 tracking-tight leading-none group-hover:text-violet-200 transition-colors">
+        <h1 className="text-base font-semibold text-fg tracking-tight leading-none group-hover:text-accent-hover transition-colors">
           kanbanly
         </h1>
-        <p className="text-[11px] text-slate-500 mt-0.5">
+        <p className="text-[11px] text-subtle mt-0.5">
           Flow first. Build fast.
         </p>
       </Link>
@@ -36,17 +36,17 @@ export async function Nav() {
           <>
             <Link
               href="/meine-karten"
-              className="text-xs text-slate-300 hover:text-slate-100 transition-colors hidden sm:inline"
+              className="text-xs text-fg-soft hover:text-fg transition-colors hidden sm:inline"
             >
               Meine Karten
             </Link>
-            <span className="text-xs text-slate-400 hidden sm:inline">
+            <span className="text-xs text-muted hidden sm:inline">
               {displayName}
             </span>
             <form action={logout}>
               <button
                 type="submit"
-                className="rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-slate-100 text-xs px-3 py-1.5 transition-colors"
+                className="rounded-lg border border-line-strong hover:border-fg-soft bg-elev/60 hover:bg-elev text-fg-soft hover:text-fg text-xs px-3 py-1.5 transition-colors"
               >
                 Abmelden
               </button>

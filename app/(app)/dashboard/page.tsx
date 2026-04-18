@@ -41,8 +41,8 @@ export default async function Dashboard({
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-100">Dashboard</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-semibold text-fg">Dashboard</h1>
+            <p className="text-sm text-muted mt-1">
               Willkommen{username ? ` @${username}` : ''}
             </p>
           </div>
@@ -50,17 +50,17 @@ export default async function Dashboard({
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs px-3 py-2">
+          <div className="mb-6 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-200 text-xs px-3 py-2">
             {error}
           </div>
         )}
 
         {!workspaces || workspaces.length === 0 ? (
-          <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-10 text-center">
-            <h2 className="text-lg font-semibold text-slate-100 mb-1">
+          <div className="rounded-2xl bg-surface/60 border border-line/80 p-10 text-center">
+            <h2 className="text-lg font-semibold text-fg mb-1">
               Keine Workspaces
             </h2>
-            <p className="text-sm text-slate-400 mb-5">
+            <p className="text-sm text-muted mb-5">
               Leg deinen ersten Workspace an, um mit Boards zu starten.
             </p>
             <div className="inline-flex">
@@ -74,11 +74,11 @@ export default async function Dashboard({
                 <div className="flex items-center justify-between mb-3">
                   <Link
                     href={`/workspaces/${ws.slug}`}
-                    className="text-sm font-semibold text-slate-100 tracking-wide uppercase hover:text-violet-200 transition-colors"
+                    className="text-sm font-semibold text-fg tracking-wide uppercase hover:text-accent-hover transition-colors"
                   >
                     {ws.name}
                   </Link>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-subtle">
                     {ws.boards?.length ?? 0} Boards
                   </span>
                 </div>
@@ -87,9 +87,9 @@ export default async function Dashboard({
                     <Link
                       key={b.id}
                       href={`/boards/${b.slug}`}
-                      className="rounded-xl bg-slate-900/60 border border-slate-800/80 p-4 hover:border-violet-400/60 hover:bg-slate-900/80 transition-colors min-h-[84px] flex items-center"
+                      className="rounded-xl bg-surface/60 border border-line/80 p-4 hover:border-accent-hover/60 hover:bg-surface/80 transition-colors min-h-[84px] flex items-center"
                     >
-                      <div className="font-medium text-slate-100 text-sm leading-snug break-words">
+                      <div className="font-medium text-fg text-sm leading-snug break-words">
                         {b.name}
                       </div>
                     </Link>

@@ -85,11 +85,11 @@ export function Calendar() {
   if (totalWithDue === 0) {
     return (
       <div className="flex-1 overflow-y-auto board-scroll p-3 sm:p-6">
-        <div className="max-w-3xl mx-auto mt-10 rounded-2xl bg-slate-900/50 border border-slate-800/80 p-8 sm:p-10 text-center">
-          <h3 className="text-base font-semibold text-slate-100 mb-1">
+        <div className="max-w-3xl mx-auto mt-10 rounded-2xl bg-surface/50 border border-line/80 p-8 sm:p-10 text-center">
+          <h3 className="text-base font-semibold text-fg mb-1">
             Noch keine Fälligkeiten
           </h3>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-muted">
             Setz bei Karten im Modal ein „Fällig am", dann tauchen sie hier
             chronologisch auf.
           </p>
@@ -106,12 +106,12 @@ export function Calendar() {
           if (items.length === 0) return null;
           const accent =
             bucket === 'overdue'
-              ? 'text-rose-300'
+              ? 'text-rose-700 dark:text-rose-300'
               : bucket === 'today'
-              ? 'text-amber-300'
+              ? 'text-amber-700 dark:text-amber-300'
               : bucket === 'week'
-              ? 'text-emerald-300'
-              : 'text-slate-300';
+              ? 'text-emerald-700 dark:text-emerald-300'
+              : 'text-fg-soft';
           return (
             <section key={bucket}>
               <div className="flex items-baseline justify-between mb-2">
@@ -120,7 +120,7 @@ export function Calendar() {
                 >
                   {BUCKET_LABELS[bucket]}
                 </h2>
-                <span className="text-[11px] text-slate-500 tabular-nums font-mono">
+                <span className="text-[11px] text-subtle tabular-nums font-mono">
                   {items.length}
                 </span>
               </div>
@@ -136,9 +136,9 @@ export function Calendar() {
                       <button
                         type="button"
                         onClick={() => setOpenCardId(cardId)}
-                        className="w-full text-left rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-violet-400/50 hover:bg-slate-900/80 transition-colors p-3 flex items-start gap-3"
+                        className="w-full text-left rounded-xl bg-surface/60 border border-line/80 hover:border-accent-hover/50 hover:bg-surface/80 transition-colors p-3 flex items-start gap-3"
                       >
-                        <span className="text-[11px] text-slate-400 tabular-nums font-mono pt-0.5 shrink-0 w-20">
+                        <span className="text-[11px] text-muted tabular-nums font-mono pt-0.5 shrink-0 w-20">
                           {formatDate(due)}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -156,11 +156,11 @@ export function Calendar() {
                               );
                             })}
                           </div>
-                          <div className="text-sm text-slate-100 font-medium leading-snug break-words">
+                          <div className="text-sm text-fg font-medium leading-snug break-words">
                             {card.title}
                           </div>
                           {list && (
-                            <div className="text-[11px] text-slate-500 mt-0.5">
+                            <div className="text-[11px] text-subtle mt-0.5">
                               in {list.title}
                             </div>
                           )}
@@ -174,7 +174,7 @@ export function Calendar() {
                                   key={uid}
                                   username={m?.username ?? null}
                                   size="xs"
-                                  className="ring-2 ring-slate-900"
+                                  className="ring-2 ring-surface"
                                 />
                               );
                             })}

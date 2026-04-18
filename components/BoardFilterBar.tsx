@@ -38,7 +38,7 @@ function Chip({
   accent?: 'violet' | 'rose' | 'amber' | 'emerald';
 }) {
   const accentClasses: Record<string, string> = {
-    violet: 'bg-violet-500/80 text-white border-violet-400',
+    violet: 'bg-accent/80 text-white border-accent-hover',
     rose: 'bg-rose-500/80 text-white border-rose-400',
     amber: 'bg-amber-500/80 text-slate-950 border-amber-400',
     emerald: 'bg-emerald-500/80 text-slate-950 border-emerald-400',
@@ -51,7 +51,7 @@ function Chip({
       className={`rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors ${
         active
           ? accentClasses[a]
-          : 'bg-slate-800/60 text-slate-300 border-slate-700 hover:border-slate-500 hover:text-slate-100'
+          : 'bg-elev/60 text-fg-soft border-line-strong hover:border-fg-soft hover:text-fg'
       }`}
     >
       {children}
@@ -133,8 +133,8 @@ export function BoardFilterBar() {
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs transition-colors ${
           hasAny
-            ? 'border-violet-400/50 bg-violet-500/10 text-violet-200'
-            : 'border-slate-700 bg-slate-800/60 text-slate-300 hover:border-slate-500 hover:text-slate-100'
+            ? 'border-accent-hover/50 bg-accent/10 text-accent-hover'
+            : 'border-line-strong bg-elev/60 text-fg-soft hover:border-fg-soft hover:text-fg'
         }`}
       >
         <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden>
@@ -142,20 +142,20 @@ export function BoardFilterBar() {
         </svg>
         Filter
         {activeCount > 0 && (
-          <span className="tabular-nums font-mono text-[10px] rounded bg-violet-500/20 px-1.5">
+          <span className="tabular-nums font-mono text-[10px] rounded bg-accent/20 px-1.5">
             {activeCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-80 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div className="absolute right-0 top-9 z-40 w-80 rounded-xl bg-surface border border-line shadow-2xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-line flex items-center justify-between">
             <div>
-              <h3 className="text-[11px] font-semibold text-slate-100 uppercase tracking-wide">
+              <h3 className="text-[11px] font-semibold text-fg uppercase tracking-wide">
                 Filter
               </h3>
-              <p className="text-[10px] text-slate-500 mt-0.5">
+              <p className="text-[10px] text-subtle mt-0.5">
                 {hasAny
                   ? `${activeCount} ${activeCount === 1 ? 'Gruppe' : 'Gruppen'} aktiv`
                   : 'Nichts ausgewählt — alle Karten sichtbar'}
@@ -165,7 +165,7 @@ export function BoardFilterBar() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-[11px] text-slate-400 hover:text-rose-300"
+                className="text-[11px] text-muted hover:text-rose-700 dark:text-rose-300"
               >
                 Zurücksetzen
               </button>
@@ -173,8 +173,8 @@ export function BoardFilterBar() {
           </div>
 
           {hasAny && (
-            <div className="px-4 py-3 border-b border-slate-800 bg-slate-950/40">
-              <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            <div className="px-4 py-3 border-b border-line bg-bg/40">
+              <h4 className="text-[10px] font-semibold text-subtle uppercase tracking-wide mb-2">
                 Aktive Filter
               </h4>
               <div className="flex flex-wrap gap-1.5">
@@ -211,9 +211,9 @@ export function BoardFilterBar() {
           )}
 
           {memberOrder.length > 0 && (
-            <section className="px-4 py-3 border-b border-slate-800">
+            <section className="px-4 py-3 border-b border-line">
               <div className="flex items-baseline justify-between mb-2">
-                <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                <h4 className="text-[10px] font-semibold text-subtle uppercase tracking-wide">
                   Zugewiesen an
                 </h4>
                 {currentUserId && memberProfiles[currentUserId] && (
@@ -222,8 +222,8 @@ export function BoardFilterBar() {
                     onClick={toggleOnlyMe}
                     className={`text-[10px] font-medium transition-colors ${
                       onlyMe
-                        ? 'text-emerald-300'
-                        : 'text-violet-300 hover:text-violet-200'
+                        ? 'text-emerald-700 dark:text-emerald-300'
+                        : 'text-accent-soft hover:text-accent-hover'
                     }`}
                   >
                     {onlyMe ? '✓ Nur mir' : 'Nur mir'}
@@ -242,15 +242,15 @@ export function BoardFilterBar() {
                       onClick={() => toggleAssignee(uid)}
                       className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-left transition-colors ${
                         active
-                          ? 'bg-violet-500/15 text-violet-100'
-                          : 'text-slate-300 hover:bg-slate-800'
+                          ? 'bg-accent/15 text-accent-soft'
+                          : 'text-fg-soft hover:bg-elev'
                       }`}
                     >
                       <Avatar username={m?.username ?? null} size="xs" />
                       <span className="flex-1 truncate">
                         @{m?.username ?? 'user'}
                         {isSelf && (
-                          <span className="ml-1.5 text-[9px] text-slate-500 uppercase">
+                          <span className="ml-1.5 text-[9px] text-subtle uppercase">
                             du
                           </span>
                         )}
@@ -258,8 +258,8 @@ export function BoardFilterBar() {
                       <span
                         className={`h-3.5 w-3.5 rounded border transition-colors shrink-0 ${
                           active
-                            ? 'bg-violet-500 border-violet-400'
-                            : 'border-slate-600'
+                            ? 'bg-accent border-accent-hover'
+                            : 'border-muted'
                         }`}
                       />
                     </button>
@@ -269,8 +269,8 @@ export function BoardFilterBar() {
             </section>
           )}
 
-          <section className="px-4 py-3 border-b border-slate-800">
-            <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
+          <section className="px-4 py-3 border-b border-line">
+            <h4 className="text-[10px] font-semibold text-subtle uppercase tracking-wide mb-2">
               Fällig am
             </h4>
             <div className="flex flex-wrap gap-1.5 mb-1.5">
@@ -308,7 +308,7 @@ export function BoardFilterBar() {
 
           {labelOrder.length > 0 && (
             <section className="px-4 py-3">
-              <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <h4 className="text-[10px] font-semibold text-subtle uppercase tracking-wide mb-2">
                 Labels
               </h4>
               <div className="flex flex-wrap gap-1.5">
@@ -355,7 +355,7 @@ function ActiveChip({
       className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${
         accent
           ? labelColor
-          : 'bg-violet-500/15 border-violet-500/30 text-violet-200'
+          : 'bg-accent/15 border-accent/30 text-accent-hover'
       }`}
     >
       {label}

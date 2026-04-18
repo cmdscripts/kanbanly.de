@@ -24,7 +24,7 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
   return (
     <div className="space-y-2">
       {labelOrder.length === 0 && !creating ? (
-        <p className="text-xs text-slate-500">Noch keine Labels.</p>
+        <p className="text-xs text-subtle">Noch keine Labels.</p>
       ) : (
         <ul className="space-y-1">
           {labelOrder.map((id) => {
@@ -37,7 +37,7 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
                   type="button"
                   onClick={() => toggleCardLabel(cardId, id)}
                   className={`flex-1 flex items-center gap-2 rounded-md px-2 py-1 border text-xs text-left transition-colors ${labelPill(lbl.color)} ${
-                    active ? 'ring-1 ring-violet-400/60' : 'opacity-80 hover:opacity-100'
+                    active ? 'ring-1 ring-accent-hover/60' : 'opacity-80 hover:opacity-100'
                   }`}
                 >
                   <span className="flex-1 truncate">{lbl.name}</span>
@@ -55,7 +55,7 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
                     });
                     if (ok) deleteLabel(id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-sm shrink-0 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 text-subtle hover:text-rose-600 dark:text-rose-400 text-sm shrink-0 transition-opacity"
                   aria-label="Label löschen"
                 >
                   ×
@@ -76,14 +76,14 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
             setNewName('');
             setCreating(false);
           }}
-          className="rounded-md bg-slate-800/60 border border-slate-700 p-2 space-y-2"
+          className="rounded-md bg-elev/60 border border-line-strong p-2 space-y-2"
         >
           <input
             autoFocus
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Label-Name"
-            className="w-full rounded-md bg-slate-800 border border-slate-700 px-2 py-1 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+            className="w-full rounded-md bg-elev border border-line-strong px-2 py-1 text-xs text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
           />
           <div className="flex flex-wrap gap-1">
             {LABEL_COLOR_KEYS.map((c) => (
@@ -101,7 +101,7 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="flex-1 rounded-md bg-violet-500/90 hover:bg-violet-400 text-white text-xs font-medium py-1"
+              className="flex-1 rounded-md bg-accent/90 hover:bg-accent-hover text-white text-xs font-medium py-1"
             >
               Erstellen
             </button>
@@ -111,7 +111,7 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
                 setCreating(false);
                 setNewName('');
               }}
-              className="rounded-md px-2 text-xs text-slate-400 hover:text-slate-200"
+              className="rounded-md px-2 text-xs text-muted hover:text-fg-soft"
             >
               Abbrechen
             </button>
@@ -121,7 +121,7 @@ export function LabelsPicker({ cardId }: { cardId: string }) {
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="w-full text-left text-xs text-violet-300 hover:text-violet-200"
+          className="w-full text-left text-xs text-accent-soft hover:text-accent-hover"
         >
           + Neues Label
         </button>

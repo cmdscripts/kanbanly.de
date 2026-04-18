@@ -152,8 +152,8 @@ export default async function MyCardsPage() {
     <div className="flex-1 overflow-y-auto p-3 sm:p-6">
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-100">Meine Karten</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-semibold text-fg">Meine Karten</h1>
+          <p className="text-sm text-muted mt-1">
             Alles was dir workspace-übergreifend zugewiesen ist —{' '}
             <span className="font-mono tabular-nums">{total}</span>{' '}
             {total === 1 ? 'Karte' : 'Karten'}.
@@ -161,11 +161,11 @@ export default async function MyCardsPage() {
         </div>
 
         {total === 0 ? (
-          <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-8 sm:p-10 text-center">
-            <h2 className="text-lg font-semibold text-slate-100 mb-1">
+          <div className="rounded-2xl bg-surface/60 border border-line/80 p-8 sm:p-10 text-center">
+            <h2 className="text-lg font-semibold text-fg mb-1">
               Nichts zugewiesen
             </h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted">
               Sobald dir jemand eine Karte zuweist, taucht sie hier auf.
             </p>
           </div>
@@ -176,12 +176,12 @@ export default async function MyCardsPage() {
               if (items.length === 0) return null;
               const accent =
                 bucket === 'overdue'
-                  ? 'text-rose-300'
+                  ? 'text-rose-700 dark:text-rose-300'
                   : bucket === 'today'
-                  ? 'text-amber-300'
+                  ? 'text-amber-700 dark:text-amber-300'
                   : bucket === 'week'
-                  ? 'text-emerald-300'
-                  : 'text-slate-300';
+                  ? 'text-emerald-700 dark:text-emerald-300'
+                  : 'text-fg-soft';
               return (
                 <section key={bucket}>
                   <div className="flex items-baseline justify-between mb-2">
@@ -190,7 +190,7 @@ export default async function MyCardsPage() {
                     >
                       {BUCKET_LABELS[bucket]}
                     </h2>
-                    <span className="text-[11px] text-slate-500 tabular-nums font-mono">
+                    <span className="text-[11px] text-subtle tabular-nums font-mono">
                       {items.length}
                     </span>
                   </div>
@@ -199,24 +199,24 @@ export default async function MyCardsPage() {
                       <li key={r.id}>
                         <Link
                           href={`/boards/${r.board_slug}?card=${r.id}`}
-                          className="block rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-violet-400/50 hover:bg-slate-900/80 transition-colors p-3 flex items-start gap-3"
+                          className="block rounded-xl bg-surface/60 border border-line/80 hover:border-accent-hover/50 hover:bg-surface/80 transition-colors p-3 flex items-start gap-3"
                         >
-                          <span className="text-[11px] text-slate-400 tabular-nums font-mono pt-0.5 shrink-0 w-20">
+                          <span className="text-[11px] text-muted tabular-nums font-mono pt-0.5 shrink-0 w-20">
                             {formatDate(r.due_date)}
                           </span>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm text-slate-100 font-medium leading-snug break-words">
+                            <div className="text-sm text-fg font-medium leading-snug break-words">
                               {r.title}
                             </div>
-                            <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+                            <div className="text-[11px] text-subtle mt-0.5 truncate">
                               {r.workspace_name && (
                                 <>
                                   <span>{r.workspace_name}</span>
-                                  <span className="mx-1 text-slate-700">/</span>
+                                  <span className="mx-1 text-faint">/</span>
                                 </>
                               )}
                               <span>{r.board_name}</span>
-                              <span className="mx-1 text-slate-700">·</span>
+                              <span className="mx-1 text-faint">·</span>
                               <span>{r.list_title}</span>
                             </div>
                           </div>

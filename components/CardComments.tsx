@@ -175,9 +175,9 @@ export function CardComments({ cardId }: { cardId: string }) {
   return (
     <div className="space-y-3">
       {rows === null ? (
-        <p className="text-xs text-slate-500 font-mono">Lädt…</p>
+        <p className="text-xs text-subtle font-mono">Lädt…</p>
       ) : rows.length === 0 ? (
-        <p className="text-xs text-slate-500">Noch keine Kommentare.</p>
+        <p className="text-xs text-subtle">Noch keine Kommentare.</p>
       ) : (
         <ul className="space-y-3">
           {rows.map((c) => (
@@ -185,23 +185,23 @@ export function CardComments({ cardId }: { cardId: string }) {
               <Avatar username={c.username} size="sm" className="shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className="text-xs font-medium text-slate-200">
+                  <span className="text-xs font-medium text-fg-soft">
                     @{c.username ?? 'unbekannt'}
                   </span>
-                  <span className="text-[10px] text-slate-500 font-mono tabular-nums">
+                  <span className="text-[10px] text-subtle font-mono tabular-nums">
                     {relativeTime(c.created_at)}
                   </span>
                   {currentUserId === c.user_id && (
                     <button
                       type="button"
                       onClick={() => deleteComment(c.id)}
-                      className="ml-auto opacity-0 group-hover:opacity-100 text-[10px] text-slate-500 hover:text-rose-400 transition-opacity"
+                      className="ml-auto opacity-0 group-hover:opacity-100 text-[10px] text-subtle hover:text-rose-600 dark:text-rose-400 transition-opacity"
                     >
                       Löschen
                     </button>
                   )}
                 </div>
-                <div className="rounded-lg bg-slate-800/60 border border-slate-700/60 px-3 py-2 text-sm text-slate-200 prose-markdown">
+                <div className="rounded-lg bg-elev/60 border border-line-strong/60 px-3 py-2 text-sm text-fg-soft prose-markdown">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -241,13 +241,13 @@ export function CardComments({ cardId }: { cardId: string }) {
           }}
           placeholder="Kommentar schreiben… Markdown erlaubt. (Strg+Enter zum Senden)"
           rows={2}
-          className="w-full rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60 resize-y font-mono"
+          className="w-full rounded-lg bg-elev/80 border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60 resize-y font-mono"
         />
         <div className="flex items-center justify-end gap-2">
           <button
             type="submit"
             disabled={!draft.trim() || sending}
-            className="rounded-lg bg-violet-500/90 hover:bg-violet-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium px-4 py-1.5 transition-colors"
+            className="rounded-lg bg-accent/90 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium px-4 py-1.5 transition-colors"
           >
             {sending ? 'Sende…' : 'Senden'}
           </button>

@@ -14,8 +14,8 @@ function renderText(text: string, currentUsername: string | null) {
         key={i}
         className={
           isSelf
-            ? 'rounded px-1 py-0.5 text-[0.9em] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-            : 'text-violet-300 font-medium'
+            ? 'rounded px-1 py-0.5 text-[0.9em] font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+            : 'text-accent-soft font-medium'
         }
       >
         {part}

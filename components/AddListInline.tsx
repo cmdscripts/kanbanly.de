@@ -13,7 +13,7 @@ export function AddListInline() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-[88vw] sm:w-[320px] shrink-0 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-700 hover:border-violet-400/60 hover:bg-slate-900/40 text-slate-400 hover:text-slate-100 text-sm py-4 transition-colors"
+        className="w-[88vw] sm:w-[320px] shrink-0 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-line-strong hover:border-accent-hover/60 hover:bg-surface/40 text-muted hover:text-fg text-sm py-4 transition-colors"
       >
         <PlusIcon />
         Neue Spalte
@@ -30,7 +30,7 @@ export function AddListInline() {
         setTitle('');
         setOpen(false);
       }}
-      className="w-[88vw] sm:w-[320px] shrink-0 rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 flex flex-col gap-2"
+      className="w-[88vw] sm:w-[320px] shrink-0 rounded-2xl bg-surface/70 border border-line/80 p-3 flex flex-col gap-2"
     >
       <input
         autoFocus
@@ -43,12 +43,12 @@ export function AddListInline() {
           }
         }}
         placeholder="Spaltentitel…"
-        className="w-full rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+        className="w-full rounded-lg bg-elev/80 border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
       />
       <div className="flex gap-2">
         <button
           type="submit"
-          className="flex-1 rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-xs font-medium py-1.5"
+          className="flex-1 rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-xs font-medium py-1.5"
         >
           Hinzufügen
         </button>
@@ -58,7 +58,7 @@ export function AddListInline() {
             setOpen(false);
             setTitle('');
           }}
-          className="rounded-lg px-3 text-xs text-slate-400 hover:text-slate-200"
+          className="rounded-lg px-3 text-xs text-muted hover:text-fg-soft"
         >
           Abbrechen
         </button>

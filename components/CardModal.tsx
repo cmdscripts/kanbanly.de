@@ -66,10 +66,10 @@ export function CardModal() {
       onClick={close}
     >
       <div
-        className="w-full max-w-lg mt-10 mb-10 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl"
+        className="w-full max-w-lg mt-10 mb-10 rounded-2xl bg-surface border border-line shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5 border-b border-slate-800 flex items-start gap-3">
+        <div className="p-5 border-b border-line flex items-start gap-3">
           <textarea
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -82,34 +82,34 @@ export function CardModal() {
               }
             }}
             rows={1}
-            className="flex-1 text-lg font-semibold text-slate-100 bg-transparent resize-none focus:outline-none focus:ring-1 focus:ring-violet-400/60 rounded px-1 -mx-1 leading-snug"
+            className="flex-1 text-lg font-semibold text-fg bg-transparent resize-none focus:outline-none focus:ring-1 focus:ring-accent-hover/60 rounded px-1 -mx-1 leading-snug"
           />
           <button
             type="button"
             onClick={close}
-            className="text-slate-500 hover:text-slate-200 text-2xl leading-none shrink-0"
+            className="text-subtle hover:text-fg-soft text-2xl leading-none shrink-0"
             aria-label="Schließen"
           >
             ×
           </button>
         </div>
 
-        <section className="p-5 border-b border-slate-800">
+        <section className="p-5 border-b border-line">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+            <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide">
               Zugewiesen
             </h3>
             <button
               type="button"
               onClick={() => setPickerOpen((v) => !v)}
-              className="text-xs text-violet-300 hover:text-violet-200"
+              className="text-xs text-accent-soft hover:text-accent-hover"
             >
               {pickerOpen ? 'Fertig' : '+ Zuweisen'}
             </button>
           </div>
 
           {assignees.length === 0 && !pickerOpen ? (
-            <p className="text-xs text-slate-500">Niemand zugewiesen.</p>
+            <p className="text-xs text-subtle">Niemand zugewiesen.</p>
           ) : (
             <div className="flex flex-wrap gap-2 mb-2">
               {assignees.map((uid) => {
@@ -118,7 +118,7 @@ export function CardModal() {
                 return (
                   <span
                     key={uid}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 border border-slate-700 pl-0.5 pr-2 py-0.5 text-xs text-slate-200"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-elev border border-line-strong pl-0.5 pr-2 py-0.5 text-xs text-fg-soft"
                   >
                     <Avatar username={m?.username ?? null} size="xs" />
                     {label}
@@ -129,9 +129,9 @@ export function CardModal() {
           )}
 
           {pickerOpen && (
-            <div className="mt-1 rounded-lg bg-slate-800/60 border border-slate-700 max-h-52 overflow-y-auto divide-y divide-slate-800">
+            <div className="mt-1 rounded-lg bg-elev/60 border border-line-strong max-h-52 overflow-y-auto divide-y divide-line">
               {memberOrder.length === 0 ? (
-                <p className="p-3 text-xs text-slate-500">
+                <p className="p-3 text-xs text-subtle">
                   Keine Mitglieder verfügbar.
                 </p>
               ) : (
@@ -143,12 +143,12 @@ export function CardModal() {
                       key={uid}
                       type="button"
                       onClick={() => toggleAssignee(openCardId, uid)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs text-fg-soft hover:bg-elev transition-colors"
                     >
                       <Avatar username={m?.username ?? null} size="sm" />
                       <span className="flex-1">
                         {m?.username ? `@${m.username}` : 'User'}
-                        <span className="ml-2 text-[10px] text-slate-500 uppercase">
+                        <span className="ml-2 text-[10px] text-subtle uppercase">
                           {m?.role}
                         </span>
                       </span>
@@ -156,7 +156,7 @@ export function CardModal() {
                         className={`h-4 w-4 rounded border transition-colors ${
                           assigned
                             ? 'bg-emerald-500/80 border-emerald-400'
-                            : 'border-slate-600'
+                            : 'border-muted'
                         }`}
                       />
                     </button>
@@ -167,15 +167,15 @@ export function CardModal() {
           )}
         </section>
 
-        <section className="p-5 border-b border-slate-800">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2">
             Labels
           </h3>
           <LabelsPicker cardId={openCardId} />
         </section>
 
-        <section className="p-5 border-b border-slate-800">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2">
             Fällig am
           </h3>
           <div className="flex items-center gap-2">
@@ -185,13 +185,13 @@ export function CardModal() {
               onChange={(e) =>
                 updateCardDueDate(openCardId, e.target.value || null)
               }
-              className="rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-400/60 [color-scheme:dark]"
+              className="rounded-lg bg-elev/80 border border-line-strong px-3 py-1.5 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent-hover/60 [color-scheme:dark]"
             />
             {card.due_date && (
               <button
                 type="button"
                 onClick={() => updateCardDueDate(openCardId, null)}
-                className="text-xs text-slate-400 hover:text-rose-400 transition-colors"
+                className="text-xs text-muted hover:text-rose-600 dark:text-rose-400 transition-colors"
               >
                 Entfernen
               </button>
@@ -199,8 +199,8 @@ export function CardModal() {
           </div>
         </section>
 
-        <section className="p-5 border-b border-slate-800">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2">
             Beschreibung
           </h3>
           <DescriptionEditor
@@ -211,20 +211,20 @@ export function CardModal() {
           />
         </section>
 
-        <section className="p-5 border-b border-slate-800">
+        <section className="p-5 border-b border-line">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+            <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide">
               Checkliste
             </h3>
             {total > 0 && (
-              <span className="text-[11px] text-slate-500 tabular-nums font-mono">
+              <span className="text-[11px] text-subtle tabular-nums font-mono">
                 {doneCount}/{total}
               </span>
             )}
           </div>
 
           {total > 0 && (
-            <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden mb-3">
+            <div className="h-1.5 w-full rounded-full bg-elev overflow-hidden mb-3">
               <div
                 className="h-full bg-gradient-to-r from-violet-500 to-emerald-400 transition-[width] duration-300"
                 style={{ width: `${progress}%` }}
@@ -245,13 +245,13 @@ export function CardModal() {
                     className={`block h-4 w-4 rounded border transition-colors ${
                       t.done
                         ? 'bg-emerald-500/80 border-emerald-400'
-                        : 'border-slate-600 hover:border-slate-400'
+                        : 'border-muted hover:border-fg-soft'
                     }`}
                   />
                 </button>
                 <span
                   className={`flex-1 text-sm ${
-                    t.done ? 'line-through text-slate-500' : 'text-slate-200'
+                    t.done ? 'line-through text-subtle' : 'text-fg-soft'
                   }`}
                 >
                   {t.title}
@@ -259,7 +259,7 @@ export function CardModal() {
                 <button
                   type="button"
                   onClick={() => deleteTask(openCardId, t.id)}
-                  className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-sm shrink-0 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 text-subtle hover:text-rose-600 dark:text-rose-400 text-sm shrink-0 transition-opacity"
                   aria-label="Löschen"
                 >
                   ×
@@ -282,26 +282,26 @@ export function CardModal() {
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
               placeholder="Neuer Task…"
-              className="flex-1 rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60"
+              className="flex-1 rounded-lg bg-elev/80 border border-line-strong px-3 py-1.5 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
             />
             <button
               type="submit"
-              className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-xs font-medium px-4 transition-colors"
+              className="rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-xs font-medium px-4 transition-colors"
             >
               Hinzufügen
             </button>
           </form>
         </section>
 
-        <section className="p-5 border-b border-slate-800">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-3">
             Kommentare
           </h3>
           <CardComments cardId={openCardId} />
         </section>
 
-        <section className="p-5 border-b border-slate-800">
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-3">
             Aktivität
           </h3>
           <div className="max-h-56 overflow-y-auto board-scroll pr-1">
@@ -321,7 +321,7 @@ export function CardModal() {
               });
               if (ok) deleteCard(openCardId);
             }}
-            className="text-xs text-slate-400 hover:text-rose-400 transition-colors"
+            className="text-xs text-muted hover:text-rose-600 dark:text-rose-400 transition-colors"
           >
             Karte löschen
           </button>

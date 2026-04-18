@@ -156,23 +156,23 @@ export function ActivityLog({ cardId }: { cardId: string }) {
 
   if (rows === null) {
     return (
-      <p className="text-xs text-slate-500 font-mono">Aktivität wird geladen…</p>
+      <p className="text-xs text-subtle font-mono">Aktivität wird geladen…</p>
     );
   }
 
   if (rows.length === 0) {
-    return <p className="text-xs text-slate-500">Noch keine Aktivität.</p>;
+    return <p className="text-xs text-subtle">Noch keine Aktivität.</p>;
   }
 
   return (
     <ul className="space-y-2">
       {rows.map((r) => (
-        <li key={r.id} className="text-xs text-slate-400 leading-relaxed">
-          <span className="text-slate-200 font-medium">
+        <li key={r.id} className="text-xs text-muted leading-relaxed">
+          <span className="text-fg-soft font-medium">
             @{r.username ?? 'unbekannt'}
           </span>{' '}
           {describe(r)}
-          <span className="ml-2 text-[10px] text-slate-600 font-mono tabular-nums">
+          <span className="ml-2 text-[10px] text-faint font-mono tabular-nums">
             {relativeTime(r.created_at)}
           </span>
         </li>

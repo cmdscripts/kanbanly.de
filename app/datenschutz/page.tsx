@@ -6,13 +6,13 @@ export default function DatenschutzPage() {
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-semibold text-slate-100 mb-8">
+        <h1 className="text-2xl font-semibold text-fg mb-8">
           Datenschutzerklärung
         </h1>
 
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 space-y-6 text-sm text-slate-300 leading-relaxed">
+        <div className="rounded-2xl bg-surface/60 border border-line/80 p-6 space-y-6 text-sm text-fg-soft leading-relaxed">
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               1. Verantwortlicher
             </h2>
             <p>
@@ -33,7 +33,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               2. Welche Daten wir verarbeiten
             </h2>
             <p>
@@ -42,28 +42,28 @@ export default function DatenschutzPage() {
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>
-                <strong className="text-slate-200">Kontodaten:</strong> deine
+                <strong className="text-fg-soft">Kontodaten:</strong> deine
                 E-Mail-Adresse und ein gehashtes Passwort.
               </li>
               <li>
-                <strong className="text-slate-200">App-Inhalte:</strong> Boards,
+                <strong className="text-fg-soft">App-Inhalte:</strong> Boards,
                 Listen, Karten, Checklisten und deren Reihenfolge, die du
                 anlegst.
               </li>
               <li>
-                <strong className="text-slate-200">
+                <strong className="text-fg-soft">
                   Einladungen und Mitgliedschaften:
                 </strong>{' '}
                 E-Mail-Adressen eingeladener Personen und deren Rollen
                 (Viewer, Editor, Admin) innerhalb von Workspaces und Boards.
               </li>
               <li>
-                <strong className="text-slate-200">Session-Cookies:</strong>{' '}
+                <strong className="text-fg-soft">Session-Cookies:</strong>{' '}
                 technisch notwendige Cookies, um deine Anmeldung aufrecht zu
                 erhalten.
               </li>
               <li>
-                <strong className="text-slate-200">Server-Logs:</strong> IP-Adresse,
+                <strong className="text-fg-soft">Server-Logs:</strong> IP-Adresse,
                 Zeitstempel, angefragte URL, User-Agent — werden maximal 14
                 Tage zur Abwehr von Angriffen gespeichert und danach
                 automatisch gelöscht.
@@ -77,19 +77,19 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               3. Zwecke und Rechtsgrundlagen
             </h2>
             <ul className="list-disc list-inside space-y-1">
               <li>
-                <strong className="text-slate-200">
+                <strong className="text-fg-soft">
                   Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):
                 </strong>{' '}
                 Bereitstellung der Kanban-Funktionen, Account-Verwaltung,
                 Einladungs-System.
               </li>
               <li>
-                <strong className="text-slate-200">
+                <strong className="text-fg-soft">
                   Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO):
                 </strong>{' '}
                 sicherer und stabiler Betrieb der Plattform (Server-Logs,
@@ -99,7 +99,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               4. Auftragsverarbeiter
             </h2>
             <p>
@@ -108,19 +108,19 @@ export default function DatenschutzPage() {
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>
-                <strong className="text-slate-200">Supabase Inc.</strong> —
+                <strong className="text-fg-soft">Supabase Inc.</strong> —
                 Authentifizierung und Datenbank. Serverregion Frankfurt
                 (Deutschland). Daten verlassen die EU nicht.
               </li>
               <li>
-                <strong className="text-slate-200">Avoro</strong> — Hosting
+                <strong className="text-fg-soft">Avoro</strong> — Hosting
                 unseres Web-Servers in Deutschland.
               </li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               5. Drittlandsübermittlung
             </h2>
             <p>
@@ -130,7 +130,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               6. Speicherdauer
             </h2>
             <ul className="list-disc list-inside space-y-1">
@@ -149,7 +149,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               7. Deine Rechte
             </h2>
             <p>Du hast jederzeit das Recht auf:</p>
@@ -168,7 +168,7 @@ export default function DatenschutzPage() {
               Zur Ausübung dieser Rechte reicht eine formlose E-Mail an{' '}
               <a
                 href="mailto:felixfranzen2026@gmail.com"
-                className="text-violet-300 hover:text-violet-200"
+                className="text-accent-soft hover:text-accent-hover"
               >
                 felixfranzen2026@gmail.com
               </a>
@@ -177,7 +177,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               8. Beschwerderecht bei der Aufsichtsbehörde
             </h2>
             <p>
@@ -188,7 +188,7 @@ export default function DatenschutzPage() {
                 href="https://lfd.niedersachsen.de"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-violet-300 hover:text-violet-200"
+                className="text-accent-soft hover:text-accent-hover"
               >
                 lfd.niedersachsen.de
               </a>
@@ -197,7 +197,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               9. Automatisierte Entscheidungsfindung
             </h2>
             <p>
@@ -207,7 +207,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               10. Änderungen dieser Erklärung
             </h2>
             <p>
@@ -221,7 +221,7 @@ export default function DatenschutzPage() {
         <div className="mt-6">
           <Link
             href="/"
-            className="text-sm text-slate-400 hover:text-slate-100"
+            className="text-sm text-muted hover:text-fg"
           >
             ← Zurück
           </Link>

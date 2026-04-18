@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { LegalFooter } from '@/components/LegalFooter';
 import { HelpMenu } from '@/components/HelpMenu';
 import { BoardPreview } from '@/components/BoardPreview';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kanbanly.de';
 
@@ -72,10 +73,10 @@ export default async function LandingPage() {
       />
       <header className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div className="flex flex-col">
-          <h1 className="text-base font-semibold text-slate-100 tracking-tight leading-none">
+          <h1 className="text-base font-semibold text-fg tracking-tight leading-none">
             kanbanly
           </h1>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-[11px] text-subtle mt-0.5">
             Flow first. Build fast.
           </p>
         </div>
@@ -83,7 +84,7 @@ export default async function LandingPage() {
           {signedIn ? (
             <Link
               href="/dashboard"
-              className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-xs font-medium px-3 py-1.5 transition-colors"
+              className="rounded-none bg-accent/90 hover:bg-accent-hover text-white text-xs font-medium px-3 py-1.5 transition-colors"
             >
               Zum Dashboard
             </Link>
@@ -91,18 +92,19 @@ export default async function LandingPage() {
             <>
               <Link
                 href="/login"
-                className="text-xs text-slate-300 hover:text-slate-100 transition-colors"
+                className="text-xs text-fg-soft hover:text-fg transition-colors"
               >
                 Anmelden
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-slate-100 text-xs px-3 py-1.5 transition-colors"
+                className="rounded-none border border-line-strong hover:border-muted bg-elev/60 hover:bg-elev text-fg-soft hover:text-fg text-xs px-3 py-1.5 transition-colors"
               >
                 Registrieren
               </Link>
             </>
           )}
+          <ThemeToggle />
           <HelpMenu />
         </div>
       </header>
@@ -110,14 +112,13 @@ export default async function LandingPage() {
       <main className="flex-1 flex flex-col">
         <section className="px-4 sm:px-6 pt-12 pb-16 sm:pt-24 sm:pb-28">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-5xl font-semibold text-slate-100 tracking-tight leading-tight">
-              Manage dein Projekt —{' '}
-              <span className="bg-gradient-to-r from-violet-300 to-emerald-300 bg-clip-text text-transparent">
-                ohne Chaos
+            <h2 className="text-3xl sm:text-5xl font-semibold text-fg tracking-tight leading-tight">
+              Manage dein Projekt —
+              <span className="block bg-gradient-to-r from-violet-400 to-emerald-400 bg-clip-text text-transparent">
+                ohne Chaos.
               </span>
-              .
             </h2>
-            <p className="mt-5 text-base sm:text-lg text-slate-400 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-5 text-base sm:text-lg text-muted max-w-xl mx-auto leading-relaxed">
               Workspaces, Boards, Karten mit Labels, Fälligkeiten und
               Zuweisungen. Drag &amp; Drop, live gespeichert. Gemacht für dich
               und dein Team.
@@ -125,14 +126,14 @@ export default async function LandingPage() {
             <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
               <Link
                 href={signedIn ? '/dashboard' : '/register'}
-                className="rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-5 py-2.5 transition-colors shadow-lg shadow-violet-500/20"
+                className="rounded-none bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 transition-colors shadow-lg shadow-violet-500/20"
               >
                 {signedIn ? 'Zum Dashboard' : 'Manage dein Projekt'}
               </Link>
               {!signedIn && (
                 <Link
                   href="/login"
-                  className="rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/40 hover:bg-slate-800 text-slate-200 text-sm px-5 py-2.5 transition-colors"
+                  className="rounded-none border border-line-strong hover:border-muted bg-elev/40 hover:bg-elev text-fg-soft text-sm px-5 py-2.5 transition-colors"
                 >
                   Anmelden
                 </Link>
@@ -167,16 +168,16 @@ export default async function LandingPage() {
         </section>
 
         <section className="px-4 sm:px-6 pb-20 sm:pb-24">
-          <div className="max-w-3xl mx-auto rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 sm:p-8 text-center">
-            <h3 className="text-xl font-semibold text-slate-100 mb-2">
+          <div className="max-w-3xl mx-auto rounded-2xl bg-surface/60 border border-line/80 p-6 sm:p-8 text-center">
+            <h3 className="text-xl font-semibold text-fg mb-2">
               Bereit loszulegen?
             </h3>
-            <p className="text-sm text-slate-400 mb-5">
+            <p className="text-sm text-muted mb-5">
               Leg in unter einer Minute deinen ersten Workspace an.
             </p>
             <Link
               href={signedIn ? '/dashboard' : '/register'}
-              className="inline-block rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-5 py-2.5 transition-colors"
+              className="inline-block rounded-none bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 transition-colors"
             >
               {signedIn ? 'Zum Dashboard' : 'Konto erstellen'}
             </Link>
@@ -191,9 +192,9 @@ export default async function LandingPage() {
 
 function Feature({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-xl bg-slate-900/40 border border-slate-800/80 p-5">
-      <h4 className="text-sm font-semibold text-slate-100 mb-1.5">{title}</h4>
-      <p className="text-xs text-slate-400 leading-relaxed">{body}</p>
+    <div className="rounded-xl bg-surface/40 border border-line/80 p-5">
+      <h4 className="text-sm font-semibold text-fg mb-1.5">{title}</h4>
+      <p className="text-xs text-muted leading-relaxed">{body}</p>
     </div>
   );
 }

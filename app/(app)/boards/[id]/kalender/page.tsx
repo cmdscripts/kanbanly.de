@@ -47,27 +47,27 @@ export default async function BoardCalendarPage({
 
   return (
     <>
-      <div className="px-3 sm:px-6 py-3 border-b border-slate-800/60 flex items-center justify-between gap-2 sm:gap-3 text-sm">
+      <div className="px-3 sm:px-6 py-3 border-b border-line/60 flex items-center justify-between gap-2 sm:gap-3 text-sm">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             href="/dashboard"
-            className="text-slate-400 hover:text-slate-100 transition-colors hidden sm:inline"
+            className="text-muted hover:text-fg transition-colors hidden sm:inline"
           >
             Dashboard
           </Link>
-          <span className="text-slate-600 hidden sm:inline">/</span>
+          <span className="text-faint hidden sm:inline">/</span>
           <Link
             href={`/workspaces/${board.workspace_slug ?? board.workspace_id}`}
-            className="text-slate-400 hover:text-slate-100 transition-colors truncate"
+            className="text-muted hover:text-fg transition-colors truncate"
           >
             {board.workspace_name ?? ''}
           </Link>
-          <span className="text-slate-600">/</span>
+          <span className="text-faint">/</span>
           <RenameBoardTitle
             id={board.id}
             name={board.name}
-            viewClassName="text-slate-100 font-medium truncate hover:text-violet-200 transition-colors text-left"
-            inputClassName="text-slate-100 font-medium bg-slate-800 border border-slate-600 rounded px-1 -mx-1 focus:outline-none focus:ring-1 focus:ring-violet-400/60 min-w-0"
+            viewClassName="text-fg font-medium truncate hover:text-accent-hover transition-colors text-left"
+            inputClassName="text-fg font-medium bg-elev border border-muted rounded px-1 -mx-1 focus:outline-none focus:ring-1 focus:ring-accent-hover/60 min-w-0"
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">

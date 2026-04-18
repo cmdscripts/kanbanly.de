@@ -27,8 +27,8 @@ export function DescriptionEditor({
           onClick={() => setMode('edit')}
           className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
             mode === 'edit'
-              ? 'bg-slate-800 text-slate-100'
-              : 'text-slate-500 hover:text-slate-300'
+              ? 'bg-elev text-fg'
+              : 'text-subtle hover:text-fg-soft'
           }`}
         >
           Schreiben
@@ -39,13 +39,13 @@ export function DescriptionEditor({
           disabled={!hasContent}
           className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
             mode === 'preview'
-              ? 'bg-slate-800 text-slate-100'
-              : 'text-slate-500 hover:text-slate-300'
+              ? 'bg-elev text-fg'
+              : 'text-subtle hover:text-fg-soft'
           }`}
         >
           Vorschau
         </button>
-        <span className="ml-auto text-[10px] text-slate-600 font-mono">
+        <span className="ml-auto text-[10px] text-faint font-mono">
           Markdown
         </span>
       </div>
@@ -57,10 +57,10 @@ export function DescriptionEditor({
           onBlur={onBlur}
           placeholder={placeholder}
           rows={5}
-          className="w-full rounded-lg bg-slate-800/80 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400/60 resize-y font-mono"
+          className="w-full rounded-lg bg-elev/80 border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60 resize-y font-mono"
         />
       ) : (
-        <div className="rounded-lg bg-slate-800/40 border border-slate-700 px-3 py-2 text-sm text-slate-200 min-h-[7rem] prose-markdown">
+        <div className="rounded-lg bg-elev/40 border border-line-strong px-3 py-2 text-sm text-fg-soft min-h-[7rem] prose-markdown">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
         </div>
       )}

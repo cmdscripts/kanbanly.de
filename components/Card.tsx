@@ -29,10 +29,10 @@ function formatDue(date: string | null): {
 }
 
 const TONE_CLASSES = {
-  overdue: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-  today: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-  soon: 'bg-slate-700/60 text-slate-200 border-slate-600',
-  future: 'bg-slate-800 text-slate-400 border-slate-700',
+  overdue: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30',
+  today: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+  soon: 'bg-elev-hover/60 text-fg-soft border-muted',
+  future: 'bg-elev text-muted border-line-strong',
 } as const;
 
 function CardInner({ id, isDragging }: Props) {
@@ -58,12 +58,12 @@ function CardInner({ id, isDragging }: Props) {
   return (
     <div
       onClick={() => setOpenCardId(id)}
-      className={`rounded-xl bg-slate-800/80 border p-3 cursor-pointer transition-all duration-700 ${
+      className={`rounded-xl bg-elev/80 border p-3 cursor-pointer transition-all duration-700 ${
         isDragging
-          ? 'shadow-xl shadow-violet-500/30 border-violet-400/60 ring-1 ring-violet-400/40'
+          ? 'shadow-xl shadow-violet-500/30 border-accent-hover/60 ring-1 ring-accent-hover/40'
           : pulsing
           ? 'border-emerald-400/60 ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-500/20'
-          : 'border-slate-700/60 shadow-sm hover:border-slate-600 hover:shadow-md'
+          : 'border-line-strong/60 shadow-sm hover:border-muted hover:shadow-md'
       }`}
     >
       {cardLabelIds.length > 0 && (
@@ -83,7 +83,7 @@ function CardInner({ id, isDragging }: Props) {
         </div>
       )}
 
-      <h3 className="text-sm font-medium text-slate-100 leading-snug break-words">
+      <h3 className="text-sm font-medium text-fg leading-snug break-words">
         {card.title}
       </h3>
 
@@ -102,7 +102,7 @@ function CardInner({ id, isDragging }: Props) {
 
       {(totalTasks > 0 || hasDescription) && (
         <div className="mt-3">
-          <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+          <div className="flex items-center justify-between text-[11px] text-muted mb-1">
             <div className="flex items-center gap-2">
               {totalTasks > 0 && (
                 <span className="font-mono tabular-nums">
@@ -112,7 +112,7 @@ function CardInner({ id, isDragging }: Props) {
               {hasDescription && (
                 <span
                   title="Hat Beschreibung"
-                  className="inline-flex items-center text-slate-500"
+                  className="inline-flex items-center text-subtle"
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -127,7 +127,7 @@ function CardInner({ id, isDragging }: Props) {
           </div>
           {totalTasks > 0 && (
             <>
-              <div className="h-1.5 w-full rounded-full bg-slate-700/50 overflow-hidden">
+              <div className="h-1.5 w-full rounded-full bg-elev-hover/50 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-violet-500 to-emerald-400 transition-[width] duration-300"
                   style={{ width: `${progress}%` }}
@@ -144,16 +144,16 @@ function CardInner({ id, isDragging }: Props) {
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="w-full flex items-center gap-2 text-left text-[12px] text-slate-300 hover:text-slate-100"
+                  className="w-full flex items-center gap-2 text-left text-[12px] text-fg-soft hover:text-fg"
                 >
                   <span
                     className={`h-3.5 w-3.5 shrink-0 rounded border transition-colors ${
                       t.done
                         ? 'bg-emerald-500/80 border-emerald-400'
-                        : 'border-slate-600'
+                        : 'border-muted'
                     }`}
                   />
-                  <span className={t.done ? 'line-through text-slate-500' : ''}>
+                  <span className={t.done ? 'line-through text-subtle' : ''}>
                     {t.title}
                   </span>
                 </button>
@@ -174,12 +174,12 @@ function CardInner({ id, isDragging }: Props) {
                 key={uid}
                 username={m?.username ?? null}
                 size="xs"
-                className="ring-2 ring-slate-800"
+                className="ring-2 ring-line"
               />
             );
           })}
           {assignees.length > 4 && (
-            <span className="h-5 w-5 rounded-full bg-slate-700 grid place-items-center text-[9px] font-semibold text-slate-200 ring-2 ring-slate-800">
+            <span className="h-5 w-5 rounded-full bg-elev-hover grid place-items-center text-[9px] font-semibold text-fg-soft ring-2 ring-line">
               +{assignees.length - 4}
             </span>
           )}

@@ -43,8 +43,8 @@ export function KebabMenu({
 
   const defaultButton =
     size === 'sm'
-      ? 'h-6 w-6 text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 rounded grid place-items-center transition-colors'
-      : 'h-8 w-8 rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-slate-100 grid place-items-center transition-colors';
+      ? 'h-6 w-6 text-sm text-muted hover:text-fg hover:bg-elev/60 rounded grid place-items-center transition-colors'
+      : 'h-8 w-8 rounded-lg border border-line-strong hover:border-fg-soft bg-elev/60 hover:bg-elev text-fg-soft hover:text-fg grid place-items-center transition-colors';
 
   return (
     <div ref={ref} className="relative">
@@ -58,7 +58,7 @@ export function KebabMenu({
         ⋯
       </button>
       {open && (
-        <div className="absolute right-0 top-[calc(100%+4px)] min-w-[180px] rounded-lg bg-slate-900 border border-slate-800 shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-[calc(100%+4px)] min-w-[180px] rounded-lg bg-surface border border-line shadow-xl z-50 overflow-hidden">
           {actions.map((a, i) => (
             <button
               key={i}
@@ -69,8 +69,8 @@ export function KebabMenu({
               }}
               className={`w-full px-3 py-2 text-left text-xs transition-colors ${
                 a.danger
-                  ? 'text-rose-300 hover:bg-rose-500/10'
-                  : 'text-slate-200 hover:bg-slate-800'
+                  ? 'text-rose-700 dark:text-rose-300 hover:bg-rose-500/10'
+                  : 'text-fg-soft hover:bg-elev'
               }`}
             >
               {a.label}

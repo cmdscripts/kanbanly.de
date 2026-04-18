@@ -18,6 +18,12 @@ function redirectLogin(message: string, next?: string) {
   redirect(`/login?${params.toString()}`);
 }
 
+function safeNext(next: string): string {
+  if (!next.startsWith('/')) return '/dashboard';
+  if (next.startsWith('//') || next.startsWith('/\\')) return '/dashboard';
+  return next;
+}
+
 function redirectRegister(message: string) {
   redirect(`/register?error=${encodeURIComponent(message)}`);
 }
@@ -38,7 +44,7 @@ export async function login(formData: FormData) {
   if (error) {
     redirectLogin(translateAuthError(error.message), next);
   }
-  redirect(next.startsWith('/') ? next : '/dashboard');
+  redirect(safeNext(next));
 }
 
 export async function register(formData: FormData) {

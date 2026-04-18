@@ -6,13 +6,13 @@ export default function ImpressumPage() {
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-semibold text-slate-100 mb-8">
+        <h1 className="text-2xl font-semibold text-fg mb-8">
           Impressum
         </h1>
 
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 space-y-6 text-sm text-slate-300">
+        <div className="rounded-2xl bg-surface/60 border border-line/80 p-6 space-y-6 text-sm text-fg-soft">
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               Angaben gemäß § 5 TMG
             </h2>
             <p className="leading-relaxed">
@@ -27,7 +27,7 @@ export default function ImpressumPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               Kontakt
             </h2>
             <p className="leading-relaxed">
@@ -38,7 +38,7 @@ export default function ImpressumPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
             </h2>
             <p className="leading-relaxed">
@@ -51,7 +51,7 @@ export default function ImpressumPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               Haftung für Inhalte
             </h2>
             <p className="leading-relaxed">
@@ -66,7 +66,7 @@ export default function ImpressumPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-100 mb-2">
+            <h2 className="text-base font-semibold text-fg mb-2">
               Haftung für Links
             </h2>
             <p className="leading-relaxed">
@@ -83,7 +83,7 @@ export default function ImpressumPage() {
         <div className="mt-6">
           <Link
             href="/"
-            className="text-sm text-slate-400 hover:text-slate-100"
+            className="text-sm text-muted hover:text-fg"
           >
             ← Zurück
           </Link>

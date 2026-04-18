@@ -36,65 +36,65 @@ export default async function InvitePage({
       <div className="flex-1 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <h1 className="text-lg font-semibold text-slate-100">kanbanly</h1>
+          <h1 className="text-lg font-semibold text-fg">kanbanly</h1>
         </div>
 
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6">
+        <div className="rounded-2xl bg-surface/60 border border-line/80 p-6">
           {!invitation ? (
             <>
-              <h2 className="text-lg font-semibold text-slate-100 mb-1">
+              <h2 className="text-lg font-semibold text-fg mb-1">
                 Einladung ungültig
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted">
                 Der Link ist abgelaufen oder existiert nicht.
               </p>
             </>
           ) : invitation.accepted_at ? (
             <>
-              <h2 className="text-lg font-semibold text-slate-100 mb-1">
+              <h2 className="text-lg font-semibold text-fg mb-1">
                 Bereits angenommen
               </h2>
-              <p className="text-sm text-slate-400 mb-4">
+              <p className="text-sm text-muted mb-4">
                 Diese Einladung wurde schon verwendet.
               </p>
               <Link
                 href="/dashboard"
-                className="inline-block rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium px-4 py-2"
+                className="inline-block rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium px-4 py-2"
               >
                 Zum Dashboard
               </Link>
             </>
           ) : new Date(invitation.expires_at) < new Date() ? (
             <>
-              <h2 className="text-lg font-semibold text-slate-100 mb-1">
+              <h2 className="text-lg font-semibold text-fg mb-1">
                 Einladung abgelaufen
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted">
                 Frag die einladende Person nach einem neuen Link.
               </p>
             </>
           ) : (
             <>
-              <h2 className="text-lg font-semibold text-slate-100 mb-1">
+              <h2 className="text-lg font-semibold text-fg mb-1">
                 Einladung zu {invitation.board_name}
               </h2>
-              <p className="text-sm text-slate-400 mb-4">
+              <p className="text-sm text-muted mb-4">
                 Workspace:{' '}
-                <span className="text-slate-300">
+                <span className="text-fg-soft">
                   {invitation.workspace_name}
                 </span>
                 <br />
                 Rolle:{' '}
-                <span className="text-slate-300">
+                <span className="text-fg-soft">
                   {ROLE_LABELS[invitation.role] ?? invitation.role}
                 </span>
                 <br />
                 Für:{' '}
-                <span className="text-slate-300">{invitation.email}</span>
+                <span className="text-fg-soft">{invitation.email}</span>
               </p>
 
               {error && (
-                <div className="mb-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs px-3 py-2">
+                <div className="mb-4 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-200 text-xs px-3 py-2">
                   {error === 'email_mismatch'
                     ? `Diese Einladung ist für ${invitation.email}. Du bist aber als ${user?.email ?? 'jemand anderes'} angemeldet.`
                     : error === 'not_authenticated'
@@ -109,20 +109,20 @@ export default async function InvitePage({
                 <div className="space-y-2">
                   <Link
                     href={`/register?next=${encodeURIComponent(`/invite/${token}`)}`}
-                    className="block text-center rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium py-2 transition-colors"
+                    className="block text-center rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium py-2 transition-colors"
                   >
                     Konto mit {invitation.email} anlegen
                   </Link>
                   <Link
                     href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
-                    className="block text-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm py-2 transition-colors"
+                    className="block text-center rounded-lg bg-elev hover:bg-elev-hover text-fg-soft text-sm py-2 transition-colors"
                   >
                     Ich habe schon ein Konto — anmelden
                   </Link>
                 </div>
               ) : user.email?.toLowerCase() !== invitation.email.toLowerCase() ? (
                 <div className="space-y-2">
-                  <p className="text-xs text-rose-200 rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2">
+                  <p className="text-xs text-rose-800 dark:text-rose-200 rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2">
                     Du bist als {user.email} angemeldet, aber die Einladung
                     ist für {invitation.email}.
                   </p>
@@ -130,7 +130,7 @@ export default async function InvitePage({
                     <input type="hidden" name="token" value={token} />
                     <button
                       type="submit"
-                      className="w-full rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm py-2 transition-colors"
+                      className="w-full rounded-lg bg-elev hover:bg-elev-hover text-fg-soft text-sm py-2 transition-colors"
                     >
                       Abmelden & mit richtiger E-Mail neu anmelden
                     </button>
@@ -141,7 +141,7 @@ export default async function InvitePage({
                   <input type="hidden" name="token" value={token} />
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white text-sm font-medium py-2 transition-colors"
+                    className="w-full rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium py-2 transition-colors"
                   >
                     Einladung annehmen
                   </button>

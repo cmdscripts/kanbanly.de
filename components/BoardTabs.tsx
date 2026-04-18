@@ -17,15 +17,15 @@ export function BoardTabs({ boardSlug, active }: Props) {
     ];
 
   return (
-    <div className="flex items-center gap-1 px-3 sm:px-6 pt-2 border-b border-slate-800/60">
+    <div className="flex items-center gap-1 px-3 sm:px-6 pt-2 border-b border-line/60">
       {tabs.map((t) => (
         <Link
           key={t.key}
           href={t.href}
           className={`rounded-t-md px-3 py-1.5 text-xs font-medium transition-colors ${
             active === t.key
-              ? 'bg-slate-900/70 text-slate-100 border border-slate-800/80 border-b-transparent'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-surface/70 text-fg border border-line/80 border-b-transparent'
+              : 'text-muted hover:text-fg-soft'
           }`}
         >
           {t.label}

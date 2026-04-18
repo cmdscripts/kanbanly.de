@@ -4,7 +4,7 @@ const EXACT: Record<string, string> = {
   'Invalid login credentials':
     'E-Mail oder Passwort stimmen nicht.',
   'Email not confirmed':
-    'Bitte bestätige zuerst deine E-Mail — wir haben dir einen Link geschickt.',
+    'Bitte bestätige zuerst deine E-Mail mit dem Code, den wir dir geschickt haben.',
   'Password should be at least 6 characters':
     'Das Passwort muss mindestens 6 Zeichen lang sein.',
   'Password should be at least 6 characters.':
@@ -21,6 +21,13 @@ const EXACT: Record<string, string> = {
     'Anonyme Anmeldung ist deaktiviert.',
   'Database error saving new user':
     'Das Konto konnte nicht angelegt werden. Bitte nochmal versuchen.',
+  'Token has expired or is invalid':
+    'Der Code ist falsch oder abgelaufen. Fordere einen neuen an.',
+  'Email link is invalid or has expired':
+    'Der Code ist abgelaufen. Fordere einen neuen an.',
+  'Invalid OTP':
+    'Dieser Code stimmt nicht. Prüf die Eingabe oder fordere einen neuen an.',
+  'OTP expired': 'Der Code ist abgelaufen. Fordere einen neuen an.',
 };
 
 const CONTAINS: Array<{ needle: string; message: string }> = [
