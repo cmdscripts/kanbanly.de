@@ -118,3 +118,39 @@ export async function removeBoardMember(
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
+
+export async function revokeInvite(
+  inviteId: string
+): Promise<{ ok: boolean; error?: string }> {
+  if (!inviteId) return { ok: false, error: 'Einladung fehlt.' };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('invitations')
+    .delete()
+    .eq('id', inviteId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function acceptInviteByToken(
+  token: string
+): Promise<{ ok: true; boardSlug: string | null } | { ok: false; error: string }> {
+  if (!token) return { ok: false, error: 'Token fehlt.' };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Nicht angemeldet.' };
+
+  const { data, error } = await supabase.rpc('accept_invitation', { t: token });
+  if (error) return { ok: false, error: error.message };
+
+  if (!data) return { ok: true, boardSlug: null };
+
+  const { data: board } = await supabase
+    .from('boards')
+    .select('slug')
+    .eq('id', data)
+    .maybeSingle();
+  return { ok: true, boardSlug: (board as { slug?: string } | null)?.slug ?? null };
+}

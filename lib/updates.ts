@@ -7,6 +7,12 @@ export type Update = {
 export const updates: Update[] = [
   {
     date: '2026-04-18',
+    title: 'Einladungs-Inbox + Gast-Boards auf Dashboard',
+    description:
+      'Neue Glocke oben rechts zeigt ausstehende Einladungen mit Annehmen-Button. Auf dem Dashboard erscheint eine „Als Gast"-Sektion für Boards fremder Workspaces. Im Board-Menü „Mitglieder" gibt es zusätzlich „Ausstehende Einladungen".',
+  },
+  {
+    date: '2026-04-18',
     title: 'Live-Präsenz + Cursor im Card-Modal',
     description:
       'Oben im Board siehst du, wer gerade anwesend ist. Öffnen mehrere das gleiche Card-Modal, wandern ihre Cursor live sichtbar durchs Fenster.',

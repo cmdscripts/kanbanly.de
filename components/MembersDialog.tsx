@@ -3,6 +3,7 @@ import { useActionState, useCallback, useEffect, useState } from 'react';
 import {
   createInvite,
   removeBoardMember,
+  revokeInvite,
   updateBoardMemberRole,
 } from '@/app/(app)/invite-actions';
 import { createClient } from '@/lib/supabase/client';
@@ -14,6 +15,14 @@ type MemberRow = {
   username: string | null;
   role: string;
   source: 'workspace' | 'board';
+};
+
+type PendingRow = {
+  id: string;
+  email: string;
+  role: string;
+  expires_at: string;
+  created_at: string;
 };
 
 type BoardRow = {
@@ -58,12 +67,25 @@ const BOARD_ROLES: Array<{ value: 'viewer' | 'editor' | 'admin'; label: string }
 export function MembersDialog({ boardId }: { boardId: string }) {
   const [open, setOpen] = useState(false);
   const [members, setMembers] = useState<MemberRow[] | null>(null);
+  const [pending, setPending] = useState<PendingRow[] | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [inviteState, inviteAction, invitePending] = useActionState(
     createInvite,
     null
   );
   const [copied, setCopied] = useState(false);
+
+  const loadPending = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('invitations')
+      .select('id, email, role, expires_at, created_at')
+      .eq('board_id', boardId)
+      .is('accepted_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+    setPending((data ?? []) as PendingRow[]);
+  }, [boardId]);
 
   const loadMembers = useCallback(async () => {
     const supabase = createClient();
@@ -122,11 +144,29 @@ export function MembersDialog({ boardId }: { boardId: string }) {
     if (!open) return;
     setActionError(null);
     loadMembers();
-  }, [open, loadMembers]);
+    loadPending();
+  }, [open, loadMembers, loadPending]);
 
   useEffect(() => {
-    if (inviteState?.ok) loadMembers();
-  }, [inviteState, loadMembers]);
+    if (inviteState?.ok) {
+      loadMembers();
+      loadPending();
+    }
+  }, [inviteState, loadMembers, loadPending]);
+
+  const handleRevoke = async (row: PendingRow) => {
+    setActionError(null);
+    const ok = await confirm({
+      title: `Einladung an ${row.email} widerrufen?`,
+      description: 'Der Link wird ungültig.',
+      confirmLabel: 'Widerrufen',
+      danger: true,
+    });
+    if (!ok) return;
+    const res = await revokeInvite(row.id);
+    if (!res.ok) setActionError(res.error ?? 'Fehler beim Widerrufen.');
+    else loadPending();
+  };
 
   const handleRoleChange = async (
     userId: string,
@@ -273,6 +313,52 @@ export function MembersDialog({ boardId }: { boardId: string }) {
                   )}
                 </li>
               ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="p-5 border-b border-line">
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-3">
+            Ausstehende Einladungen
+          </h3>
+          {pending === null ? (
+            <p className="text-xs text-subtle font-mono">Lädt…</p>
+          ) : pending.length === 0 ? (
+            <p className="text-xs text-subtle">Keine offenen Einladungen.</p>
+          ) : (
+            <ul className="space-y-2">
+              {pending.map((p) => {
+                const expires = new Date(p.expires_at);
+                const daysLeft = Math.max(
+                  0,
+                  Math.round(
+                    (expires.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+                  )
+                );
+                return (
+                  <li
+                    key={p.id}
+                    className="flex items-center gap-3 rounded-lg bg-elev/50 border border-line px-3 py-2"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-fg truncate">{p.email}</div>
+                      <div className="text-[10px] text-subtle mt-0.5">
+                        {ROLE_LABELS[p.role] ?? p.role}
+                        <span className="mx-1 text-faint">·</span>
+                        Läuft ab in {daysLeft}{' '}
+                        {daysLeft === 1 ? 'Tag' : 'Tagen'}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRevoke(p)}
+                      className="text-[11px] text-muted hover:text-rose-600 dark:text-rose-400 transition-colors"
+                    >
+                      Widerrufen
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

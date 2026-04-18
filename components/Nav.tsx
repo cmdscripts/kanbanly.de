@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { logout } from '@/app/(auth)/actions';
 import { HelpMenu } from './HelpMenu';
 import { SearchButton } from './SearchButton';
+import { NotificationsBell } from './NotificationsBell';
 
 export async function Nav() {
   const supabase = await createClient();
@@ -45,6 +46,7 @@ export async function Nav() {
             <span className="text-xs text-muted hidden sm:inline">
               {displayName}
             </span>
+            <NotificationsBell />
             <form action={logout}>
               <button
                 type="submit"
