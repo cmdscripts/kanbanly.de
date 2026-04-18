@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { CalendarClient } from '@/components/CalendarClient';
 import { BoardMenu } from '@/components/BoardMenu';
 import { BoardTabs } from '@/components/BoardTabs';
-import { InviteDialog } from '@/components/InviteDialog';
+import { MembersDialog } from '@/components/MembersDialog';
 import { RenameBoardTitle } from '@/components/RenameTitle';
 import { createClient } from '@/lib/supabase/server';
 import { fetchBoardData } from '@/lib/boardData';
@@ -71,7 +71,7 @@ export default async function BoardCalendarPage({
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <InviteDialog boardId={board.id} />
+          <MembersDialog boardId={board.id} />
           <BoardMenu
             boardId={board.id}
             boardName={board.name}

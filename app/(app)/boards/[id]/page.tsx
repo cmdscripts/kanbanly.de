@@ -4,7 +4,7 @@ import { BoardClient } from '@/components/BoardClient';
 import { BoardMenu } from '@/components/BoardMenu';
 import { BoardTabs } from '@/components/BoardTabs';
 import { BoardFilterBar } from '@/components/BoardFilterBar';
-import { InviteDialog } from '@/components/InviteDialog';
+import { MembersDialog } from '@/components/MembersDialog';
 import { RenameBoardTitle } from '@/components/RenameTitle';
 import { createClient } from '@/lib/supabase/server';
 import { fetchBoardData } from '@/lib/boardData';
@@ -73,7 +73,7 @@ export default async function BoardPage({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <BoardFilterBar />
-          <InviteDialog boardId={board.id} />
+          <MembersDialog boardId={board.id} />
           <BoardMenu
             boardId={board.id}
             boardName={board.name}

@@ -1,18 +1,63 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useBoard, type DueBucketFilter } from '@/store/boardStore';
-import { activeFilterCount } from '@/lib/filterCards';
-import { labelPill, LABEL_COLORS } from '@/lib/labelColors';
+import { activeFilterCount, isFilterActive } from '@/lib/filterCards';
+import { createClient } from '@/lib/supabase/client';
+import { labelPill } from '@/lib/labelColors';
 import { Avatar } from './Avatar';
 
-const DUE_OPTIONS: Array<{ key: DueBucketFilter; label: string }> = [
-  { key: 'all', label: 'Alle' },
+const DUE_PRIMARY: Array<{ key: DueBucketFilter; label: string }> = [
   { key: 'overdue', label: 'Überfällig' },
   { key: 'today', label: 'Heute' },
   { key: 'week', label: 'Diese Woche' },
+];
+
+const DUE_SECONDARY: Array<{ key: DueBucketFilter; label: string }> = [
   { key: 'later', label: 'Später' },
   { key: 'none', label: 'Ohne Datum' },
 ];
+
+const DUE_LABELS: Record<DueBucketFilter, string> = {
+  all: 'Alle',
+  overdue: 'Überfällig',
+  today: 'Heute',
+  week: 'Diese Woche',
+  later: 'Später',
+  none: 'Ohne Datum',
+};
+
+function Chip({
+  active,
+  onClick,
+  children,
+  accent,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  accent?: 'violet' | 'rose' | 'amber' | 'emerald';
+}) {
+  const accentClasses: Record<string, string> = {
+    violet: 'bg-violet-500/80 text-white border-violet-400',
+    rose: 'bg-rose-500/80 text-white border-rose-400',
+    amber: 'bg-amber-500/80 text-slate-950 border-amber-400',
+    emerald: 'bg-emerald-500/80 text-slate-950 border-emerald-400',
+  };
+  const a = accent ?? 'violet';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+        active
+          ? accentClasses[a]
+          : 'bg-slate-800/60 text-slate-300 border-slate-700 hover:border-slate-500 hover:text-slate-100'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function BoardFilterBar() {
   const filters = useBoard((s) => s.filters);
@@ -24,7 +69,15 @@ export function BoardFilterBar() {
   const memberOrder = useBoard((s) => s.memberOrder);
 
   const [open, setOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -45,6 +98,11 @@ export function BoardFilterBar() {
   }, [open]);
 
   const activeCount = activeFilterCount(filters);
+  const hasAny = isFilterActive(filters);
+  const onlyMe =
+    currentUserId !== null &&
+    filters.assignees.length === 1 &&
+    filters.assignees[0] === currentUserId;
 
   const toggleLabel = (id: string) => {
     setFilters({
@@ -60,6 +118,13 @@ export function BoardFilterBar() {
         : [...filters.assignees, id],
     });
   };
+  const toggleOnlyMe = () => {
+    if (!currentUserId) return;
+    setFilters({ assignees: onlyMe ? [] : [currentUserId] });
+  };
+  const setDue = (bucket: DueBucketFilter) => {
+    setFilters({ due: filters.due === bucket ? 'all' : bucket });
+  };
 
   return (
     <div ref={ref} className="relative">
@@ -67,7 +132,7 @@ export function BoardFilterBar() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs transition-colors ${
-          activeCount > 0
+          hasAny
             ? 'border-violet-400/50 bg-violet-500/10 text-violet-200'
             : 'border-slate-700 bg-slate-800/60 text-slate-300 hover:border-slate-500 hover:text-slate-100'
         }`}
@@ -84,12 +149,19 @@ export function BoardFilterBar() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-9 z-40 w-72 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
+        <div className="absolute right-0 top-9 z-40 w-80 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-            <h3 className="text-[11px] font-semibold text-slate-100 uppercase tracking-wide">
-              Filter
-            </h3>
-            {activeCount > 0 && (
+            <div>
+              <h3 className="text-[11px] font-semibold text-slate-100 uppercase tracking-wide">
+                Filter
+              </h3>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                {hasAny
+                  ? `${activeCount} ${activeCount === 1 ? 'Gruppe' : 'Gruppen'} aktiv`
+                  : 'Nichts ausgewählt — alle Karten sichtbar'}
+              </p>
+            </div>
+            {hasAny && (
               <button
                 type="button"
                 onClick={clearFilters}
@@ -100,54 +172,38 @@ export function BoardFilterBar() {
             )}
           </div>
 
-          <div className="px-4 py-3 border-b border-slate-800">
-            <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
-              Fällig
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {DUE_OPTIONS.map((o) => (
-                <button
-                  key={o.key}
-                  type="button"
-                  onClick={() => setFilters({ due: o.key })}
-                  className={`rounded-md px-2 py-0.5 text-[11px] transition-colors ${
-                    filters.due === o.key
-                      ? 'bg-violet-500/80 text-white'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {labelOrder.length > 0 && (
-            <div className="px-4 py-3 border-b border-slate-800">
+          {hasAny && (
+            <div className="px-4 py-3 border-b border-slate-800 bg-slate-950/40">
               <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Labels
+                Aktive Filter
               </h4>
-              <div className="flex flex-wrap gap-1">
-                {labelOrder.map((id) => {
+              <div className="flex flex-wrap gap-1.5">
+                {filters.due !== 'all' && (
+                  <ActiveChip
+                    label={DUE_LABELS[filters.due]}
+                    onRemove={() => setFilters({ due: 'all' })}
+                  />
+                )}
+                {filters.assignees.map((uid) => {
+                  const m = memberProfiles[uid];
+                  return (
+                    <ActiveChip
+                      key={uid}
+                      label={`@${m?.username ?? 'user'}`}
+                      onRemove={() => toggleAssignee(uid)}
+                    />
+                  );
+                })}
+                {filters.labels.map((id) => {
                   const lbl = labels[id];
                   if (!lbl) return null;
-                  const active = filters.labels.includes(id);
                   return (
-                    <button
+                    <ActiveChip
                       key={id}
-                      type="button"
-                      onClick={() => toggleLabel(id)}
-                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium border transition-all ${labelPill(lbl.color)} ${
-                        active
-                          ? 'ring-2 ring-white/50'
-                          : 'opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${LABEL_COLORS[lbl.color as keyof typeof LABEL_COLORS]?.swatch ?? 'bg-slate-400'}`}
-                      />
-                      {lbl.name}
-                    </button>
+                      label={lbl.name}
+                      accent={lbl.color}
+                      onRemove={() => toggleLabel(id)}
+                    />
                   );
                 })}
               </div>
@@ -155,31 +211,52 @@ export function BoardFilterBar() {
           )}
 
           {memberOrder.length > 0 && (
-            <div className="px-4 py-3">
-              <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Zugewiesen
-              </h4>
-              <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+            <section className="px-4 py-3 border-b border-slate-800">
+              <div className="flex items-baseline justify-between mb-2">
+                <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Zugewiesen an
+                </h4>
+                {currentUserId && memberProfiles[currentUserId] && (
+                  <button
+                    type="button"
+                    onClick={toggleOnlyMe}
+                    className={`text-[10px] font-medium transition-colors ${
+                      onlyMe
+                        ? 'text-emerald-300'
+                        : 'text-violet-300 hover:text-violet-200'
+                    }`}
+                  >
+                    {onlyMe ? '✓ Nur mir' : 'Nur mir'}
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 max-h-40 overflow-y-auto board-scroll">
                 {memberOrder.map((uid) => {
                   const m = memberProfiles[uid];
                   const active = filters.assignees.includes(uid);
+                  const isSelf = uid === currentUserId;
                   return (
                     <button
                       key={uid}
                       type="button"
                       onClick={() => toggleAssignee(uid)}
-                      className={`flex items-center gap-2 rounded-md px-2 py-1 text-xs text-left transition-colors ${
+                      className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-left transition-colors ${
                         active
-                          ? 'bg-violet-500/20 text-violet-100'
+                          ? 'bg-violet-500/15 text-violet-100'
                           : 'text-slate-300 hover:bg-slate-800'
                       }`}
                     >
                       <Avatar username={m?.username ?? null} size="xs" />
                       <span className="flex-1 truncate">
                         @{m?.username ?? 'user'}
+                        {isSelf && (
+                          <span className="ml-1.5 text-[9px] text-slate-500 uppercase">
+                            du
+                          </span>
+                        )}
                       </span>
                       <span
-                        className={`h-3 w-3 rounded border ${
+                        className={`h-3.5 w-3.5 rounded border transition-colors shrink-0 ${
                           active
                             ? 'bg-violet-500 border-violet-400'
                             : 'border-slate-600'
@@ -189,10 +266,107 @@ export function BoardFilterBar() {
                   );
                 })}
               </div>
+            </section>
+          )}
+
+          <section className="px-4 py-3 border-b border-slate-800">
+            <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              Fällig am
+            </h4>
+            <div className="flex flex-wrap gap-1.5 mb-1.5">
+              {DUE_PRIMARY.map((o) => {
+                const accent: 'rose' | 'amber' | 'emerald' =
+                  o.key === 'overdue'
+                    ? 'rose'
+                    : o.key === 'today'
+                    ? 'amber'
+                    : 'emerald';
+                return (
+                  <Chip
+                    key={o.key}
+                    active={filters.due === o.key}
+                    onClick={() => setDue(o.key)}
+                    accent={accent}
+                  >
+                    {o.label}
+                  </Chip>
+                );
+              })}
             </div>
+            <div className="flex flex-wrap gap-1.5">
+              {DUE_SECONDARY.map((o) => (
+                <Chip
+                  key={o.key}
+                  active={filters.due === o.key}
+                  onClick={() => setDue(o.key)}
+                >
+                  {o.label}
+                </Chip>
+              ))}
+            </div>
+          </section>
+
+          {labelOrder.length > 0 && (
+            <section className="px-4 py-3">
+              <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Labels
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {labelOrder.map((id) => {
+                  const lbl = labels[id];
+                  if (!lbl) return null;
+                  const active = filters.labels.includes(id);
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => toggleLabel(id)}
+                      className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium border transition-all ${labelPill(lbl.color)} ${
+                        active
+                          ? 'ring-2 ring-white/60 scale-[1.02]'
+                          : 'opacity-55 hover:opacity-100'
+                      }`}
+                    >
+                      {lbl.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+function ActiveChip({
+  label,
+  onRemove,
+  accent,
+}: {
+  label: string;
+  onRemove: () => void;
+  accent?: string;
+}) {
+  const labelColor = accent ? labelPill(accent) : '';
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${
+        accent
+          ? labelColor
+          : 'bg-violet-500/15 border-violet-500/30 text-violet-200'
+      }`}
+    >
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label="Filter entfernen"
+        className="text-current opacity-60 hover:opacity-100 leading-none text-sm"
+      >
+        ×
+      </button>
+    </span>
   );
 }

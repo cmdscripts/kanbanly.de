@@ -86,3 +86,35 @@ export async function switchAccountForInvite(formData: FormData) {
   await supabase.auth.signOut();
   redirect(`/login?next=${encodeURIComponent(`/invite/${token}`)}`);
 }
+
+export async function updateBoardMemberRole(
+  boardId: string,
+  userId: string,
+  role: 'viewer' | 'editor' | 'admin'
+): Promise<{ ok: boolean; error?: string }> {
+  if (!['viewer', 'editor', 'admin'].includes(role)) {
+    return { ok: false, error: 'Ungültige Rolle.' };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('board_members')
+    .update({ role })
+    .eq('board_id', boardId)
+    .eq('user_id', userId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function removeBoardMember(
+  boardId: string,
+  userId: string
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('board_members')
+    .delete()
+    .eq('board_id', boardId)
+    .eq('user_id', userId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
