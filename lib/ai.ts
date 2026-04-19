@@ -1,6 +1,6 @@
 import 'server-only';
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-2.5-flash';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const LABEL_COLORS = [
@@ -128,8 +128,18 @@ export async function generateBoard(userPrompt: string): Promise<GeneratedBoard>
 
   if (!res.ok) {
     const errText = await res.text();
+    if (res.status === 429) {
+      throw new Error(
+        'KI-Kontingent für heute aufgebraucht. Probier es in ein paar Minuten nochmal oder morgen.'
+      );
+    }
+    if (res.status === 403) {
+      throw new Error(
+        'KI-Zugang blockiert. Der API-Key ist ungültig oder hat keinen Zugriff.'
+      );
+    }
     throw new Error(
-      `Gemini-Fehler (${res.status}): ${errText.slice(0, 200)}`
+      `KI-Fehler (${res.status}): ${errText.slice(0, 200)}`
     );
   }
 
