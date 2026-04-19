@@ -243,6 +243,32 @@ export async function regenerateRecoveryCodes(): Promise<
   return { ok: true };
 }
 
+function getSiteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+}
+
+export async function signInWithProvider(formData: FormData) {
+  const provider = String(formData.get('provider') ?? '');
+  if (provider !== 'github' && provider !== 'discord') {
+    redirectLogin('Unbekannter Provider.');
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider as 'github' | 'discord',
+    options: {
+      redirectTo: `${getSiteUrl()}/auth/callback`,
+    },
+  });
+  if (error || !data?.url) {
+    redirectLogin(
+      translateAuthError(error?.message ?? 'OAuth konnte nicht gestartet werden.')
+    );
+    return;
+  }
+  redirect(data.url);
+}
+
 export async function completeUsername(formData: FormData) {
   const username = String(formData.get('username') ?? '').trim();
   const next = safeNext(String(formData.get('next') ?? '/dashboard'));
