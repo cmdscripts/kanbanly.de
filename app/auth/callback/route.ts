@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 
 function siteBase() {
@@ -13,24 +12,15 @@ function safeNext(next: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  const t0 = Date.now();
   const base = siteBase();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const next = safeNext(searchParams.get('next') ?? '/dashboard');
   const errorDescription = searchParams.get('error_description');
 
-  console.log(
-    '[auth/callback] start',
-    JSON.stringify({ code: code?.slice(0, 8), hasError: !!errorDescription })
-  );
-
   if (errorDescription) {
     return NextResponse.redirect(
-      new URL(
-        `/login?error=${encodeURIComponent(errorDescription)}`,
-        base
-      )
+      new URL(`/login?error=${encodeURIComponent(errorDescription)}`, base)
     );
   }
 
@@ -40,58 +30,21 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const store = await cookies();
-  const allCookies = store.getAll();
-  console.log(
-    '[auth/callback] cookies',
-    allCookies.map((c) => `${c.name}(len=${c.value.length})`).join(', ') || 'NONE'
-  );
+  const supabase = await createClient();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-  let exchangeError: string | null = null;
-  try {
-    const supabase = await createClient();
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('exchange_timeout_12s')), 12_000)
-    );
-    const exchange = supabase.auth.exchangeCodeForSession(code);
-    const result = (await Promise.race([exchange, timeout])) as Awaited<
-      typeof exchange
-    >;
-    if (result.error) {
-      exchangeError = result.error.message;
-      console.log(
-        '[auth/callback] exchange error',
-        Date.now() - t0,
-        'ms:',
-        result.error.message
-      );
-    } else {
-      console.log('[auth/callback] exchange ok', Date.now() - t0, 'ms');
-    }
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    exchangeError = msg;
-    console.log(
-      '[auth/callback] exchange threw',
-      Date.now() - t0,
-      'ms:',
-      msg
-    );
-  }
-
-  if (exchangeError) {
+  if (error) {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(exchangeError)}`, base)
+      new URL(`/login?error=${encodeURIComponent(error.message)}`, base)
     );
   }
 
-  const supabase2 = await createClient();
   const {
     data: { user },
-  } = await supabase2.auth.getUser();
+  } = await supabase.auth.getUser();
 
   if (user) {
-    const { data: profile } = await supabase2
+    const { data: profile } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
@@ -105,6 +58,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.log('[auth/callback] done redirect', Date.now() - t0, 'ms');
   return NextResponse.redirect(new URL(next, base));
 }
