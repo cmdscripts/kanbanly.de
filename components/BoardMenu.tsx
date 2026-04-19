@@ -6,6 +6,7 @@ import { confirm } from '@/store/confirmStore';
 import { KebabMenu } from './KebabMenu';
 import { SaveAsTemplateDialog } from './SaveAsTemplateDialog';
 import { WebhooksDialog } from './WebhooksDialog';
+import { BackgroundDialog } from './BackgroundDialog';
 
 type Props = {
   boardId: string;
@@ -17,6 +18,7 @@ export function BoardMenu({ boardId, boardName, workspaceId }: Props) {
   const router = useRouter();
   const [saveTplOpen, setSaveTplOpen] = useState(false);
   const [webhooksOpen, setWebhooksOpen] = useState(false);
+  const [bgOpen, setBgOpen] = useState(false);
 
   return (
     <>
@@ -26,6 +28,10 @@ export function BoardMenu({ boardId, boardName, workspaceId }: Props) {
           {
             label: 'Als Template speichern',
             onSelect: () => setSaveTplOpen(true),
+          },
+          {
+            label: 'Hintergrundbild',
+            onSelect: () => setBgOpen(true),
           },
           {
             label: 'Discord-Webhook',
@@ -62,6 +68,7 @@ export function BoardMenu({ boardId, boardName, workspaceId }: Props) {
           onClose={() => setWebhooksOpen(false)}
         />
       )}
+      {bgOpen && <BackgroundDialog onClose={() => setBgOpen(false)} />}
     </>
   );
 }

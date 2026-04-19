@@ -135,6 +135,10 @@ type State = {
   groupBy: 'none' | 'assignee' | 'label';
   setGroupBy: (g: 'none' | 'assignee' | 'label') => void;
 
+  backgroundUrl: string | null;
+  setBackgroundUrl: (url: string | null) => void;
+  updateBoardBackground: (url: string | null) => Promise<void>;
+
   openCardId: string | null;
   setOpenCardId: (id: string | null) => void;
 
@@ -201,8 +205,35 @@ export const useBoard = create<State>((set, get) => ({
   openCardId: null,
   selectedCardIds: {},
   groupBy: 'none',
+  backgroundUrl: null,
 
   setGroupBy: (g) => set({ groupBy: g }),
+  setBackgroundUrl: (url) => set({ backgroundUrl: url }),
+
+  async updateBoardBackground(url) {
+    const bId = get().boardId;
+    if (!bId) return;
+    const clean = url?.trim() || null;
+    if (clean) {
+      try {
+        const parsed = new URL(clean);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+          console.warn('updateBoardBackground: only http(s) URLs allowed');
+          return;
+        }
+      } catch {
+        console.warn('updateBoardBackground: invalid URL');
+        return;
+      }
+    }
+    set({ backgroundUrl: clean });
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('boards')
+      .update({ background_url: clean })
+      .eq('id', bId);
+    if (error) console.error('updateBoardBackground', error);
+  },
 
   setOpenCardId: (id) => set({ openCardId: id }),
 

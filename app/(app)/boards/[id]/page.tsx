@@ -109,6 +109,7 @@ export default async function BoardPage({
         initialCardLabels={data.initialCardLabels}
         currentUserId={user.id}
         currentUsername={currentUsername}
+        initialBackgroundUrl={board.background_url}
       />
     </>
   );

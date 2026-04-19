@@ -11,6 +11,7 @@ export default function Board() {
   const listOrder = useBoard((s) => s.listOrder);
   const moveCard = useBoard((s) => s.moveCard);
   const groupBy = useBoard((s) => s.groupBy);
+  const backgroundUrl = useBoard((s) => s.backgroundUrl);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function Board() {
   if (mounted && groupBy !== 'none' && listOrder.length > 0) {
     return (
       <>
+        <BoardBackground url={backgroundUrl} />
         <SwimlaneBoard />
         <BulkActionBar />
       </>
@@ -44,45 +46,62 @@ export default function Board() {
 
   return (
     <>
-    <div className="flex-1 overflow-x-auto overscroll-x-contain board-scroll p-3 sm:p-6 min-h-0">
-      {mounted ? (
-        listOrder.length === 0 ? (
-          <div className="h-full min-h-[60vh] flex items-center justify-center">
-            <div className="max-w-sm text-center rounded-2xl bg-surface/50 border border-line/80 p-8">
-              <h3 className="text-base font-semibold text-fg mb-1">
-                Leere Bühne
-              </h3>
-              <p className="text-sm text-muted mb-5">
-                Leg deine erste Spalte an — z. B. „To-do", „In Arbeit",
-                „Erledigt".
-              </p>
-              <div className="inline-flex">
-                <AddListInline />
+      <BoardBackground url={backgroundUrl} />
+      <div className="relative flex-1 overflow-x-auto overscroll-x-contain board-scroll p-3 sm:p-6 min-h-0">
+        {mounted ? (
+          listOrder.length === 0 ? (
+            <div className="h-full min-h-[60vh] flex items-center justify-center">
+              <div className="max-w-sm text-center rounded-2xl bg-surface/50 border border-line/80 p-8">
+                <h3 className="text-base font-semibold text-fg mb-1">
+                  Leere Bühne
+                </h3>
+                <p className="text-sm text-muted mb-5">
+                  Leg deine erste Spalte an — z. B. „To-do", „In Arbeit",
+                  „Erledigt".
+                </p>
+                <div className="inline-flex">
+                  <AddListInline />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="flex gap-3 sm:gap-4 items-start min-h-full">
+                {listOrder.map((id) => (
+                  <List key={id} listId={id} />
+                ))}
+                <AddListInline />
+              </div>
+            </DragDropContext>
+          )
         ) : (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex gap-3 sm:gap-4 items-start min-h-full">
-              {listOrder.map((id) => (
-                <List key={id} listId={id} />
-              ))}
-              <AddListInline />
-            </div>
-          </DragDropContext>
-        )
-      ) : (
-        <div className="flex gap-3 sm:gap-4 items-start">
-          {listOrder.map((id) => (
-            <div
-              key={id}
-              className="w-[88vw] sm:w-[320px] h-40 rounded-2xl bg-surface/60 border border-line/80 animate-pulse shrink-0"
-            />
-          ))}
-        </div>
-      )}
-    </div>
-    <BulkActionBar />
+          <div className="flex gap-3 sm:gap-4 items-start">
+            {listOrder.map((id) => (
+              <div
+                key={id}
+                className="w-[88vw] sm:w-[320px] h-40 rounded-2xl bg-surface/60 border border-line/80 animate-pulse shrink-0"
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      <BulkActionBar />
     </>
+  );
+}
+
+function BoardBackground({ url }: { url: string | null }) {
+  if (!url) return null;
+  return (
+    <div
+      aria-hidden
+      className="fixed inset-0 pointer-events-none -z-10"
+    >
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url("${url.replace(/"/g, '%22')}")` }}
+      />
+      <div className="absolute inset-0 bg-bg/70 backdrop-blur-[2px]" />
+    </div>
   );
 }

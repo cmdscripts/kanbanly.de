@@ -37,6 +37,7 @@ type Props = {
   initialCardLabels: Array<{ card_id: string; label_id: string }>;
   currentUserId: string;
   currentUsername: string | null;
+  initialBackgroundUrl: string | null;
 };
 
 export function BoardClient(props: Props) {
@@ -44,6 +45,11 @@ export function BoardClient(props: Props) {
   const searchParams = useSearchParams();
   const cardFromUrl = searchParams.get('card');
   const setOpenCardId = useBoard((s) => s.setOpenCardId);
+  const setBackgroundUrl = useBoard((s) => s.setBackgroundUrl);
+
+  useEffect(() => {
+    setBackgroundUrl(props.initialBackgroundUrl);
+  }, [props.boardId, props.initialBackgroundUrl, setBackgroundUrl]);
 
   useEffect(() => {
     if (!cardFromUrl) return;

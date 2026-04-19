@@ -7,6 +7,7 @@ type BoardRow = {
   slug: string;
   name: string;
   workspace_id: string;
+  background_url: string | null;
   workspaces: { name: string; slug: string } | { name: string; slug: string }[] | null;
   lists: Array<{
     id: string;
@@ -53,6 +54,7 @@ export type BoardData = {
     workspace_id: string;
     workspace_name: string | null;
     workspace_slug: string | null;
+    background_url: string | null;
   };
   initialLists: Array<{ id: string; title: string; position: number }>;
   initialCards: Array<{
@@ -82,7 +84,7 @@ export type BoardData = {
 };
 
 const BOARD_QUERY = `
-  id, slug, name, workspace_id,
+  id, slug, name, workspace_id, background_url,
   workspaces(name, slug),
   lists(
     id, title, position,
@@ -177,6 +179,7 @@ export async function fetchBoardData(
       workspace_id: board.workspace_id,
       workspace_name: workspace?.name ?? null,
       workspace_slug: workspace?.slug ?? null,
+      background_url: board.background_url,
     },
     initialLists,
     initialCards,
