@@ -93,16 +93,24 @@ export function WebhooksDialog({ boardId, onClose }: Props) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const existing = await getBoardWebhook(boardId);
-      if (cancelled) return;
-      if (existing) {
-        setSavedUrl(existing.url);
-        setEnabled(existing.enabled);
-        setEvents(existing.events);
-      } else {
+      try {
+        const existing = await getBoardWebhook(boardId);
+        if (cancelled) return;
+        if (existing) {
+          setSavedUrl(existing.url);
+          setEnabled(existing.enabled);
+          setEvents(existing.events);
+        } else {
+          setEditingUrl(true);
+        }
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : String(e);
+        setMessage({ kind: 'err', text: `Laden fehlgeschlagen: ${msg}` });
         setEditingUrl(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     })();
     return () => {
       cancelled = true;

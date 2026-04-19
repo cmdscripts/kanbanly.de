@@ -193,26 +193,7 @@ const EMBED_COLORS: Record<WebhookEvent['kind'], number> = {
   comment_deleted: 0xf43f5e,
 };
 
-export const AVAILABLE_EVENTS: Array<WebhookEvent['kind']> = [
-  'card_created',
-  'card_moved',
-  'card_renamed',
-  'card_deleted',
-  'card_due_set',
-  'card_due_cleared',
-  'task_added',
-  'task_done',
-  'task_undone',
-  'task_deleted',
-  'label_added',
-  'label_removed',
-  'assignee_added',
-  'assignee_removed',
-  'comment_added',
-  'comment_deleted',
-];
-
-export const DEFAULT_EVENTS: Array<WebhookEvent['kind']> = [
+const DEFAULT_EVENTS: Array<WebhookEvent['kind']> = [
   'card_created',
   'card_moved',
   'card_deleted',
