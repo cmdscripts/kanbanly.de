@@ -5,6 +5,7 @@ import { deleteBoard } from '@/app/(app)/actions';
 import { confirm } from '@/store/confirmStore';
 import { KebabMenu } from './KebabMenu';
 import { SaveAsTemplateDialog } from './SaveAsTemplateDialog';
+import { WebhooksDialog } from './WebhooksDialog';
 
 type Props = {
   boardId: string;
@@ -15,6 +16,7 @@ type Props = {
 export function BoardMenu({ boardId, boardName, workspaceId }: Props) {
   const router = useRouter();
   const [saveTplOpen, setSaveTplOpen] = useState(false);
+  const [webhooksOpen, setWebhooksOpen] = useState(false);
 
   return (
     <>
@@ -24,6 +26,10 @@ export function BoardMenu({ boardId, boardName, workspaceId }: Props) {
           {
             label: 'Als Template speichern',
             onSelect: () => setSaveTplOpen(true),
+          },
+          {
+            label: 'Discord-Webhook',
+            onSelect: () => setWebhooksOpen(true),
           },
           {
             label: 'Board löschen',
@@ -48,6 +54,12 @@ export function BoardMenu({ boardId, boardName, workspaceId }: Props) {
           boardId={boardId}
           defaultTitle={boardName}
           onClose={() => setSaveTplOpen(false)}
+        />
+      )}
+      {webhooksOpen && (
+        <WebhooksDialog
+          boardId={boardId}
+          onClose={() => setWebhooksOpen(false)}
         />
       )}
     </>

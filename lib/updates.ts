@@ -7,6 +7,12 @@ export type Update = {
 export const updates: Update[] = [
   {
     date: '2026-04-19',
+    title: 'Discord-Webhooks pro Board',
+    description:
+      'Board-Menü → „Discord-Webhook" → URL einfügen. Neue Karten und Verschiebungen landen automatisch in deinem Discord-Channel. Test-Button direkt drin.',
+  },
+  {
+    date: '2026-04-19',
     title: 'Board-Layout: 2 Spalten für mehr Übersicht',
     description:
       'Öffnet eine Karte, siehst du links Name, Labels, Beschreibung und Checkliste — rechts direkt Kommentare und Aktivität. Kein ewiges Scrollen mehr.',

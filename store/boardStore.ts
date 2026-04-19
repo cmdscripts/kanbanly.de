@@ -1,6 +1,7 @@
 'use client';
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
+import { notifyBoardEvent } from '@/app/(app)/webhook-actions';
 
 const PULSE_DURATION_MS = 1200;
 const PULSE_SUPPRESS_MS = 1500;
@@ -674,7 +675,18 @@ export const useBoard = create<State>((set, get) => ({
       .from('cards')
       .insert({ id, list_id: listId, title, position });
     if (error) console.error('addCard', error);
-    else logActivity(id, 'created', { title });
+    else {
+      logActivity(id, 'created', { title });
+      const bId = get().boardId;
+      if (bId) {
+        notifyBoardEvent(bId, {
+          kind: 'card_created',
+          cardId: id,
+          cardTitle: title,
+          listTitle: list.title,
+        }).catch(() => {});
+      }
+    }
   },
 
   async moveCard(source, destination) {
@@ -735,6 +747,17 @@ export const useBoard = create<State>((set, get) => ({
       const fromTitle = srcList.title;
       const toTitle = dstList.title;
       logActivity(moved, 'moved', { from: fromTitle, to: toTitle });
+      const bId = get().boardId;
+      const movedCard = get().cards[moved];
+      if (bId && movedCard) {
+        notifyBoardEvent(bId, {
+          kind: 'card_moved',
+          cardId: moved,
+          cardTitle: movedCard.title,
+          fromList: fromTitle,
+          toList: toTitle,
+        }).catch(() => {});
+      }
     }
   },
 
