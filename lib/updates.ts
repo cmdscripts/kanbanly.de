@@ -6,6 +6,12 @@ export type Update = {
 
 export const updates: Update[] = [
   {
+    date: '2026-04-19',
+    title: 'Recovery-Codes statt E-Mail-Bestätigung',
+    description:
+      'Kein Bestätigungslink mehr beim Signup. Stattdessen kriegst du 8 Recovery-Codes zum Speichern — einer davon setzt dein Passwort zurück, falls du es vergisst. Keine Wartezeiten, kein Rate-Limit.',
+  },
+  {
     date: '2026-04-18',
     title: 'Einladungs-Inbox + Gast-Boards auf Dashboard',
     description:

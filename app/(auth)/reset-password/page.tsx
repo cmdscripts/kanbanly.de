@@ -1,20 +1,27 @@
 import Link from 'next/link';
-import { login } from '../actions';
+import { resetPassword } from '../actions';
 
-type SearchParams = { error?: string; next?: string };
+type SearchParams = { error?: string; email?: string };
 
-export default async function LoginPage({
+export const metadata = {
+  title: 'Passwort zurücksetzen · kanbanly',
+};
+
+export default async function ResetPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { error, next } = await searchParams;
+  const { error, email } = await searchParams;
 
   return (
     <div className="rounded-2xl bg-surface/60 backdrop-blur-md border border-line/80 p-6 shadow-xl shadow-black/20">
-      <h2 className="text-xl font-semibold text-fg mb-1">Anmelden</h2>
+      <h2 className="text-xl font-semibold text-fg mb-1">
+        Passwort zurücksetzen
+      </h2>
       <p className="text-sm text-muted mb-5">
-        Willkommen zurück bei kanbanly.
+        Nutze einen deiner Recovery-Codes, um ein neues Passwort zu setzen.
+        Jeder Code kann nur einmal verwendet werden.
       </p>
 
       {error && (
@@ -23,8 +30,7 @@ export default async function LoginPage({
         </div>
       )}
 
-      <form action={login} className="space-y-3">
-        {next && <input type="hidden" name="next" value={next} />}
+      <form action={resetPassword} className="space-y-3">
         <div>
           <label className="block text-xs text-muted mb-1" htmlFor="email">
             E-Mail
@@ -34,50 +40,57 @@ export default async function LoginPage({
             name="email"
             type="email"
             required
+            defaultValue={email ?? ''}
             autoComplete="email"
             className="w-full rounded-lg bg-elev/80 border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
           />
         </div>
         <div>
-          <label
-            className="block text-xs text-muted mb-1"
-            htmlFor="password"
-          >
-            Passwort
+          <label className="block text-xs text-muted mb-1" htmlFor="code">
+            Recovery-Code
+          </label>
+          <input
+            id="code"
+            name="code"
+            type="text"
+            required
+            placeholder="XXXXX-XXXXX"
+            autoComplete="one-time-code"
+            className="w-full rounded-lg bg-elev/80 border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle font-mono tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted mb-1" htmlFor="password">
+            Neues Passwort
           </label>
           <input
             id="password"
             name="password"
             type="password"
             required
-            autoComplete="current-password"
+            minLength={8}
+            autoComplete="new-password"
             className="w-full rounded-lg bg-elev/80 border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-accent-hover/60"
           />
+          <p className="text-[11px] text-subtle mt-1">
+            Mindestens 8 Zeichen.
+          </p>
         </div>
         <button
           type="submit"
           className="w-full rounded-lg bg-accent/90 hover:bg-accent-hover text-white text-sm font-medium py-2 mt-2 transition-colors"
         >
-          Anmelden
+          Passwort setzen
         </button>
       </form>
 
-      <div className="mt-4 text-center">
-        <Link
-          href="/reset-password"
-          className="text-xs text-muted hover:text-accent-soft"
-        >
-          Passwort vergessen?
-        </Link>
-      </div>
-
       <p className="mt-5 text-center text-xs text-muted">
-        Noch kein Konto?{' '}
+        Doch nicht?{' '}
         <Link
-          href="/register"
+          href="/login"
           className="text-accent-soft hover:text-accent-hover font-medium"
         >
-          Registrieren
+          Zurück zum Login
         </Link>
       </p>
     </div>

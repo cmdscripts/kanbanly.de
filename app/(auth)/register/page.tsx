@@ -1,34 +1,14 @@
 import Link from 'next/link';
 import { register } from '../actions';
 
-type SearchParams = { error?: string; sent?: string };
+type SearchParams = { error?: string };
 
 export default async function RegisterPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { error, sent } = await searchParams;
-
-  if (sent) {
-    return (
-      <div className="rounded-2xl bg-surface/60 backdrop-blur-md border border-line/80 p-6 shadow-xl shadow-black/20 text-center">
-        <h2 className="text-xl font-semibold text-fg mb-2">
-          Bitte E-Mail bestätigen
-        </h2>
-        <p className="text-sm text-muted">
-          Wir haben dir einen Bestätigungslink geschickt. Öffne ihn und klick
-          auf „Jetzt bestätigen", um dein Konto zu aktivieren.
-        </p>
-        <Link
-          href="/login"
-          className="inline-block mt-5 text-accent-soft hover:text-accent-hover text-sm font-medium"
-        >
-          Zurück zum Login
-        </Link>
-      </div>
-    );
-  }
+  const { error } = await searchParams;
 
   return (
     <div className="rounded-2xl bg-surface/60 backdrop-blur-md border border-line/80 p-6 shadow-xl shadow-black/20">
@@ -36,7 +16,8 @@ export default async function RegisterPage({
         Konto erstellen
       </h2>
       <p className="text-sm text-muted mb-5">
-        Starte mit deinem ersten Board.
+        Starte mit deinem ersten Board. Kein E-Mail-Versand nötig — du kriegst
+        Recovery-Codes zum Ausdrucken.
       </p>
 
       {error && (

@@ -1,6 +1,13 @@
 'use server';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  generateRecoveryCodes,
+  hashRecoveryCode,
+  normalizeCode,
+} from '@/lib/recoveryCodes';
 import {
   translateAuthError,
   validateEmail,
@@ -8,9 +15,7 @@ import {
   validateUsername,
 } from '@/lib/authErrors';
 
-function siteUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-}
+const CODES_COOKIE = 'kanbanly_one_time_codes';
 
 function redirectLogin(message: string, next?: string) {
   const params = new URLSearchParams({ error: message });
@@ -18,14 +23,20 @@ function redirectLogin(message: string, next?: string) {
   redirect(`/login?${params.toString()}`);
 }
 
+function redirectRegister(message: string) {
+  redirect(`/register?error=${encodeURIComponent(message)}`);
+}
+
+function redirectReset(message: string, email?: string) {
+  const params = new URLSearchParams({ error: message });
+  if (email) params.set('email', email);
+  redirect(`/reset-password?${params.toString()}`);
+}
+
 function safeNext(next: string): string {
   if (!next.startsWith('/')) return '/dashboard';
   if (next.startsWith('//') || next.startsWith('/\\')) return '/dashboard';
   return next;
-}
-
-function redirectRegister(message: string) {
-  redirect(`/register?error=${encodeURIComponent(message)}`);
 }
 
 export async function login(formData: FormData) {
@@ -48,7 +59,7 @@ export async function login(formData: FormData) {
 }
 
 export async function register(formData: FormData) {
-  const email = String(formData.get('email') ?? '').trim();
+  const email = String(formData.get('email') ?? '').trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
   const username = String(formData.get('username') ?? '').trim();
 
@@ -72,19 +83,164 @@ export async function register(formData: FormData) {
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  const admin = createAdminClient();
+  const { data: created, error: createErr } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: { username },
-      emailRedirectTo: `${siteUrl()}/auth/confirm`,
-    },
+    email_confirm: true,
+    user_metadata: { username },
   });
 
-  if (error) {
-    redirectRegister(translateAuthError(error.message));
+  if (createErr || !created.user) {
+    redirectRegister(
+      translateAuthError(createErr?.message ?? 'Unbekannter Fehler')
+    );
   }
-  redirect('/register?sent=1');
+
+  const userId = created!.user!.id;
+  const codes = generateRecoveryCodes(8);
+  const rows = codes.map((c) => ({
+    user_id: userId,
+    code_hash: hashRecoveryCode(c),
+  }));
+  const { error: codesErr } = await admin.from('recovery_codes').insert(rows);
+  if (codesErr) {
+    console.error('register recovery_codes insert', codesErr);
+  }
+
+  const { error: signInErr } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (signInErr) {
+    redirectRegister(translateAuthError(signInErr.message));
+  }
+
+  const store = await cookies();
+  store.set(CODES_COOKIE, JSON.stringify(codes), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 600,
+    path: '/',
+  });
+
+  redirect('/register/codes');
+}
+
+export async function readOneTimeCodes(): Promise<string[] | null> {
+  const store = await cookies();
+  const raw = store.get(CODES_COOKIE)?.value;
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (
+      Array.isArray(parsed) &&
+      parsed.every((x) => typeof x === 'string')
+    ) {
+      return parsed as string[];
+    }
+  } catch {}
+  return null;
+}
+
+export async function consumeOneTimeCodes() {
+  const store = await cookies();
+  store.delete(CODES_COOKIE);
+}
+
+export async function resetPassword(formData: FormData) {
+  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const rawCode = String(formData.get('code') ?? '');
+  const newPassword = String(formData.get('password') ?? '');
+
+  const emailError = validateEmail(email);
+  if (emailError) redirectReset(emailError, email);
+
+  const code = normalizeCode(rawCode);
+  if (!/^[A-Z0-9]{5}-[A-Z0-9]{5}$/.test(code)) {
+    redirectReset(
+      'Code hat das falsche Format. Erwartet: XXXXX-XXXXX.',
+      email
+    );
+  }
+
+  const passwordError = validatePassword(newPassword);
+  if (passwordError) redirectReset(passwordError, email);
+
+  const supabase = await createClient();
+  const { data: userId, error: redeemErr } = await supabase.rpc(
+    'redeem_recovery_code',
+    { p_email: email, p_code_hash: hashRecoveryCode(code) }
+  );
+
+  if (redeemErr) {
+    redirectReset(
+      'Konnte den Code nicht prüfen. Versuch es nochmal.',
+      email
+    );
+  }
+
+  if (!userId) {
+    redirectReset(
+      'E-Mail oder Code stimmen nicht (oder der Code wurde schon benutzt).',
+      email
+    );
+  }
+
+  const admin = createAdminClient();
+  const { error: updateErr } = await admin.auth.admin.updateUserById(
+    userId as string,
+    { password: newPassword }
+  );
+  if (updateErr) {
+    redirectReset(translateAuthError(updateErr.message), email);
+  }
+
+  const { error: signInErr } = await supabase.auth.signInWithPassword({
+    email,
+    password: newPassword,
+  });
+  if (signInErr) {
+    redirectLogin(
+      'Passwort geändert — bitte melde dich mit dem neuen Passwort an.'
+    );
+  }
+
+  redirect('/dashboard');
+}
+
+export async function regenerateRecoveryCodes(): Promise<
+  | { ok: true }
+  | { ok: false; error: string }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Nicht angemeldet.' };
+
+  const admin = createAdminClient();
+  await admin.from('recovery_codes').delete().eq('user_id', user.id);
+
+  const codes = generateRecoveryCodes(8);
+  const rows = codes.map((c) => ({
+    user_id: user.id,
+    code_hash: hashRecoveryCode(c),
+  }));
+  const { error } = await admin.from('recovery_codes').insert(rows);
+  if (error) return { ok: false, error: error.message };
+
+  const store = await cookies();
+  store.set(CODES_COOKIE, JSON.stringify(codes), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 600,
+    path: '/',
+  });
+
+  return { ok: true };
 }
 
 export async function logout() {
