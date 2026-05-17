@@ -634,7 +634,7 @@ function buildV2Block(block: V2Block): Record<string, unknown> | null {
   }
 }
 
-export function buildV2Components(containers: V2Container[]): unknown[] {
+function buildV2Components(containers: V2Container[]): unknown[] {
   return containers
     .slice(0, 10)
     .map((c) => {
