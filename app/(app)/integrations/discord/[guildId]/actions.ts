@@ -496,9 +496,165 @@ export type EmbedV2 = {
 };
 
 export type MessagePayloadV2 = {
+  /** 'v1' = klassische Embeds (Default für Backwards-Compat), 'v2' = Components V2. */
+  mode?: 'v1' | 'v2';
   content?: string;
   embeds?: EmbedV2[];
+  /** Nur bei mode='v2' relevant. Discord verbietet content+embeds in V2. */
+  v2?: V2Container[];
 };
+
+// ============== Components V2 (Discord) ==============
+// Spec: https://discord.com/developers/docs/components/reference
+// Type-IDs:
+//   1=ActionRow, 9=Section, 10=TextDisplay, 11=Thumbnail (Section-Accessory),
+//   12=MediaGallery, 13=File, 14=Separator, 17=Container
+
+export type V2ButtonAccessory = {
+  kind: 'button';
+  label: string;
+  url?: string;
+  roleId?: string;
+  style?: 'primary' | 'secondary' | 'success' | 'danger' | 'link';
+  emoji?: string;
+};
+
+export type V2ThumbnailAccessory = {
+  kind: 'thumbnail';
+  url: string;
+  description?: string;
+};
+
+export type V2Accessory = V2ButtonAccessory | V2ThumbnailAccessory;
+
+export type V2Block =
+  | { type: 'text'; content: string }
+  | { type: 'separator'; divider?: boolean; spacing?: 1 | 2 }
+  | { type: 'section'; text: string; accessory?: V2Accessory }
+  | { type: 'media'; items: { url: string; description?: string }[] }
+  | { type: 'file'; url: string }
+  | { type: 'buttons'; buttons: LinkButton[] };
+
+export type V2Container = {
+  accentColor?: number;
+  spoiler?: boolean;
+  children: V2Block[];
+};
+
+function buildV2Button(b: LinkButton): Record<string, unknown> | null {
+  const kind = b.kind ?? 'link';
+  const btn: Record<string, unknown> = {
+    type: 2,
+    label: (b.label || ' ').slice(0, 80),
+  };
+  if (kind === 'role') {
+    if (!b.roleId) return null;
+    btn.custom_id = `ec:role:${b.roleId}`;
+    let style =
+      BUTTON_STYLE_MAP[(b.style ?? 'secondary') as NonNullable<LinkButton['style']>] ?? 2;
+    if (style === 5) style = 2;
+    btn.style = style;
+  } else {
+    if (!b.url) return null;
+    btn.style = 5;
+    btn.url = b.url;
+  }
+  const emoji = parseLinkButtonEmoji(b.emoji);
+  if (emoji) btn.emoji = emoji;
+  return btn;
+}
+
+function buildV2Block(block: V2Block): Record<string, unknown> | null {
+  switch (block.type) {
+    case 'text': {
+      const c = block.content?.trim();
+      if (!c) return null;
+      return { type: 10, content: c.slice(0, 4000) };
+    }
+    case 'separator': {
+      return {
+        type: 14,
+        divider: block.divider ?? true,
+        spacing: block.spacing ?? 1,
+      };
+    }
+    case 'section': {
+      const txt = block.text?.trim();
+      if (!txt) return null;
+      const out: Record<string, unknown> = {
+        type: 9,
+        components: [{ type: 10, content: txt.slice(0, 4000) }],
+      };
+      if (block.accessory) {
+        if (block.accessory.kind === 'button') {
+          const btn = buildV2Button({
+            kind: block.accessory.url ? 'link' : 'role',
+            label: block.accessory.label,
+            url: block.accessory.url,
+            roleId: block.accessory.roleId,
+            style: block.accessory.style,
+            emoji: block.accessory.emoji,
+          });
+          if (btn) out.accessory = btn;
+        } else if (block.accessory.kind === 'thumbnail' && block.accessory.url) {
+          out.accessory = {
+            type: 11,
+            media: { url: block.accessory.url },
+            ...(block.accessory.description
+              ? { description: block.accessory.description.slice(0, 1024) }
+              : {}),
+          };
+        }
+      }
+      return out;
+    }
+    case 'media': {
+      const items = (block.items ?? [])
+        .filter((i) => i.url?.trim())
+        .slice(0, 10)
+        .map((i) => ({
+          media: { url: i.url },
+          ...(i.description ? { description: i.description.slice(0, 1024) } : {}),
+        }));
+      if (items.length === 0) return null;
+      return { type: 12, items };
+    }
+    case 'file': {
+      if (!block.url?.trim()) return null;
+      return { type: 13, file: { url: block.url } };
+    }
+    case 'buttons': {
+      const btns = (block.buttons ?? [])
+        .slice(0, 5)
+        .map(buildV2Button)
+        .filter((b): b is Record<string, unknown> => b !== null);
+      if (btns.length === 0) return null;
+      return { type: 1, components: btns };
+    }
+  }
+}
+
+export function buildV2Components(containers: V2Container[]): unknown[] {
+  return containers
+    .slice(0, 10)
+    .map((c) => {
+      const children = (c.children ?? [])
+        .map(buildV2Block)
+        .filter((b): b is Record<string, unknown> => b !== null);
+      if (children.length === 0) return null;
+      const out: Record<string, unknown> = {
+        type: 17,
+        components: children,
+      };
+      if (typeof c.accentColor === 'number') out.accent_color = c.accentColor;
+      if (c.spoiler) out.spoiler = true;
+      return out;
+    })
+    .filter((c): c is Record<string, unknown> => c !== null);
+}
+
+/** Discord Message-Flag für Components V2. */
+const FLAG_IS_COMPONENTS_V2 = 1 << 15;
 
 function buildDiscordEmbed(e: EmbedV2): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -697,22 +853,29 @@ export async function sendBotEmbedComposed(
 
     const payloadRaw = String(formData.get('payload') ?? '{}');
     const parsed = JSON.parse(payloadRaw) as {
+      mode?: 'v1' | 'v2';
       content?: string;
       embeds?: EmbedV2[];
+      v2?: V2Container[];
       components?: ComponentRow[];
       webhookMode?: boolean;
       username?: string;
       avatarUrl?: string;
     };
 
+    const mode = parsed.mode === 'v2' ? 'v2' : 'v1';
     const content = parsed.content?.trim();
-    const embedsOut = (parsed.embeds ?? [])
-      .slice(0, 10)
-      .map(buildDiscordEmbed)
-      .filter((e) => Object.keys(e).length > 0);
-    const componentsOut = parsed.components
-      ? buildComponentsPayload(parsed.components)
-      : [];
+    const embedsOut =
+      mode === 'v1'
+        ? (parsed.embeds ?? [])
+            .slice(0, 10)
+            .map(buildDiscordEmbed)
+            .filter((e) => Object.keys(e).length > 0)
+        : [];
+    const v1ComponentsOut =
+      mode === 'v1' && parsed.components ? buildComponentsPayload(parsed.components) : [];
+    const v2ComponentsOut =
+      mode === 'v2' ? buildV2Components(parsed.v2 ?? []) : [];
 
     const files = formData.getAll('files').filter((v): v is File => v instanceof File);
     if (files.length > 10) {
@@ -724,14 +887,29 @@ export async function sendBotEmbedComposed(
       }
     }
 
-    if (!content && embedsOut.length === 0 && componentsOut.length === 0 && files.length === 0) {
+    if (mode === 'v2' && v2ComponentsOut.length === 0 && files.length === 0) {
+      return { ok: false, error: 'V2-Nachricht ist leer — mindestens ein Component nötig.' };
+    }
+    if (
+      mode === 'v1' &&
+      !content &&
+      embedsOut.length === 0 &&
+      v1ComponentsOut.length === 0 &&
+      files.length === 0
+    ) {
       return { ok: false, error: 'Nachricht ist leer.' };
     }
 
     const basePayload: Record<string, unknown> = {};
-    if (content) basePayload.content = content.slice(0, 2000);
-    if (embedsOut.length > 0) basePayload.embeds = embedsOut;
-    if (componentsOut.length > 0) basePayload.components = componentsOut;
+    if (mode === 'v2') {
+      basePayload.components = v2ComponentsOut;
+      basePayload.flags = FLAG_IS_COMPONENTS_V2;
+      // KEIN content / KEINE embeds — Discord lehnt das in V2 ab.
+    } else {
+      if (content) basePayload.content = content.slice(0, 2000);
+      if (embedsOut.length > 0) basePayload.embeds = embedsOut;
+      if (v1ComponentsOut.length > 0) basePayload.components = v1ComponentsOut;
+    }
 
     if (parsed.webhookMode) {
       const wh = await getOrCreateChannelWebhook(guildId, channelId);

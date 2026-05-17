@@ -10,6 +10,8 @@ import {
   type MessagePayloadV2,
   type ComponentRow,
   type LinkButton,
+  type V2Container,
+  type V2Block,
 } from '@/app/(app)/integrations/discord/[guildId]/actions';
 import { toast } from '@/store/toastStore';
 import { confirm } from '@/store/confirmStore';
@@ -17,6 +19,7 @@ import { Switch } from './Switch';
 import { Button } from './ui/Button';
 import { ColorPicker } from './ui/ColorPicker';
 import { FormSection, FormRow } from './ui/FormSection';
+import { V2ContainerEditor, emptyV2Container } from './V2ContainerEditor';
 
 type Role = { id: string; name: string; color: number };
 
@@ -64,9 +67,11 @@ export function EmbedCreatorForm({
   roles = [],
   initialTemplates = [],
 }: Props) {
+  const [mode, setMode] = useState<'v1' | 'v2'>('v1');
   const [channelId, setChannelId] = useState('');
   const [content, setContent] = useState('');
   const [embeds, setEmbeds] = useState<EmbedV2[]>([emptyEmbed()]);
+  const [v2Containers, setV2Containers] = useState<V2Container[]>([emptyV2Container()]);
   const [componentRows, setComponentRows] = useState<ComponentRow[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [webhookMode, setWebhookMode] = useState(false);
@@ -79,12 +84,30 @@ export function EmbedCreatorForm({
   const [pending, startTransition] = useTransition();
 
   const currentPayload: MessagePayloadV2 = useMemo(
-    () => ({
-      content: content.trim() || undefined,
-      embeds: embeds.length > 0 ? embeds : undefined,
-    }),
-    [content, embeds],
+    () =>
+      mode === 'v2'
+        ? { mode: 'v2', v2: v2Containers }
+        : {
+            mode: 'v1',
+            content: content.trim() || undefined,
+            embeds: embeds.length > 0 ? embeds : undefined,
+          },
+    [mode, content, embeds, v2Containers],
   );
+
+  const switchMode = async (next: 'v1' | 'v2') => {
+    if (next === mode) return;
+    const ok = await confirm({
+      title: next === 'v2' ? 'Auf Components V2 wechseln?' : 'Zurück zu klassischen Embeds?',
+      description:
+        next === 'v2'
+          ? 'V2 erlaubt keine klassischen Embeds und keinen Plain-Content. Deine V1-Inhalte bleiben aber im Formular erhalten, falls du zurückwechselst.'
+          : 'V1 nutzt klassische Embeds. Deine V2-Container bleiben im Formular erhalten, falls du wieder wechselst.',
+      confirmLabel: 'Wechseln',
+    });
+    if (!ok) return;
+    setMode(next);
+  };
 
   const updateEmbed = (idx: number, patch: Partial<EmbedV2>) => {
     setEmbeds((prev) =>
@@ -112,8 +135,14 @@ export function EmbedCreatorForm({
 
   const loadTemplate = (tpl: EmbedTemplate) => {
     const p = fromTemplate(tpl);
-    setContent(p.content ?? '');
-    setEmbeds(p.embeds && p.embeds.length > 0 ? p.embeds : [emptyEmbed()]);
+    const tplMode = p.mode ?? (p.v2 && p.v2.length > 0 ? 'v2' : 'v1');
+    setMode(tplMode);
+    if (tplMode === 'v2') {
+      setV2Containers(p.v2 && p.v2.length > 0 ? p.v2 : [emptyV2Container()]);
+    } else {
+      setContent(p.content ?? '');
+      setEmbeds(p.embeds && p.embeds.length > 0 ? p.embeds : [emptyEmbed()]);
+    }
     setActiveTemplateId(tpl.id);
     setTemplateName(tpl.name);
     toast.info(`Vorlage „${tpl.name}" geladen`);
@@ -122,6 +151,7 @@ export function EmbedCreatorForm({
   const newTemplate = () => {
     setContent('');
     setEmbeds([emptyEmbed()]);
+    setV2Containers([emptyV2Container()]);
     setActiveTemplateId(null);
     setTemplateName('');
   };
@@ -193,9 +223,16 @@ export function EmbedCreatorForm({
       fd.set(
         'payload',
         JSON.stringify({
-          content: content.trim() || undefined,
-          embeds: embeds.length > 0 ? embeds : undefined,
-          components: componentRows.length > 0 ? componentRows : undefined,
+          mode,
+          ...(mode === 'v1'
+            ? {
+                content: content.trim() || undefined,
+                embeds: embeds.length > 0 ? embeds : undefined,
+                components: componentRows.length > 0 ? componentRows : undefined,
+              }
+            : {
+                v2: v2Containers,
+              }),
           webhookMode,
           username: webhookMode ? overrideUsername : undefined,
           avatarUrl: webhookMode ? overrideAvatarUrl : undefined,
@@ -220,6 +257,43 @@ export function EmbedCreatorForm({
 
   return (
     <div className="space-y-5">
+      {/* Mode-Toggle: V1 ↔ V2 */}
+      <FormSection
+        title="Nachrichten-Format"
+        description="V1 = klassische Embeds (Title, Description, Fields). V2 = Components V2 mit flexiblen Blöcken (Discord 2024+)."
+      >
+        <div className="inline-flex rounded-lg border border-line-strong bg-elev/30 p-0.5">
+          <button
+            type="button"
+            onClick={() => switchMode('v1')}
+            className={`px-3 py-1.5 text-[12.5px] font-medium rounded-md transition-all ${
+              mode === 'v1'
+                ? 'bg-accent text-white shadow'
+                : 'text-fg-soft hover:text-fg'
+            }`}
+          >
+            V1 · Klassische Embeds
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode('v2')}
+            className={`px-3 py-1.5 text-[12.5px] font-medium rounded-md transition-all ${
+              mode === 'v2'
+                ? 'bg-accent text-white shadow'
+                : 'text-fg-soft hover:text-fg'
+            }`}
+          >
+            V2 · Components
+          </button>
+        </div>
+        {mode === 'v2' && (
+          <p className="text-[11px] text-subtle mt-2">
+            ⓘ In V2 sind <code>content</code> und klassische Embeds nicht erlaubt. Alles läuft
+            über Container/Blöcke.
+          </p>
+        )}
+      </FormSection>
+
       {/* Templates-Bar */}
       <FormSection
         title="Vorlagen"
@@ -298,7 +372,11 @@ export function EmbedCreatorForm({
       {/* Channel + Content */}
       <FormSection
         title="Nachricht"
-        description="Channel + optionaler Plain-Text-Content über den Embeds."
+        description={
+          mode === 'v2'
+            ? 'Channel auswählen. (Plain-Text-Content ist in V2 nicht erlaubt.)'
+            : 'Channel + optionaler Plain-Text-Content über den Embeds.'
+        }
       >
         <FormRow label="Channel" required>
           <select
@@ -314,62 +392,74 @@ export function EmbedCreatorForm({
             ))}
           </select>
         </FormRow>
-        <FormRow
-          label="Content (optional)"
-          hint="Plain-Text der über den Embeds erscheint. Markdown unterstützt."
-        >
-          <div className="relative">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value.slice(0, 2000))}
-              rows={3}
-              placeholder="@here Achtung, neue Regeln!"
-              className="w-full rounded-md bg-elev border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle font-mono focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent resize-y transition-all"
-            />
-            <span className="absolute right-2 bottom-2 text-[10px] text-subtle font-mono tabular-nums">
-              {content.length}/2000
-            </span>
-          </div>
-        </FormRow>
+        {mode === 'v1' && (
+          <FormRow
+            label="Content (optional)"
+            hint="Plain-Text der über den Embeds erscheint. Markdown unterstützt."
+          >
+            <div className="relative">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value.slice(0, 2000))}
+                rows={3}
+                placeholder="@here Achtung, neue Regeln!"
+                className="w-full rounded-md bg-elev border border-line-strong px-3 py-2 text-sm text-fg placeholder:text-subtle font-mono focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent resize-y transition-all"
+              />
+              <span className="absolute right-2 bottom-2 text-[10px] text-subtle font-mono tabular-nums">
+                {content.length}/2000
+              </span>
+            </div>
+          </FormRow>
+        )}
       </FormSection>
 
-      {/* Embeds */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-2 px-1">
-          <div>
-            <h3 className="text-[15px] font-semibold text-fg">
-              Embeds <span className="text-subtle">({embeds.length}/10)</span>
-            </h3>
-            <p className="text-[12px] text-muted mt-0.5">
-              Mehrere Embeds pro Nachricht möglich.
-            </p>
+      {/* Embeds (V1) ODER V2-Container */}
+      {mode === 'v1' ? (
+        <>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div>
+                <h3 className="text-[15px] font-semibold text-fg">
+                  Embeds <span className="text-subtle">({embeds.length}/10)</span>
+                </h3>
+                <p className="text-[12px] text-muted mt-0.5">
+                  Mehrere Embeds pro Nachricht möglich.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={addEmbed}
+                disabled={embeds.length >= 10}
+              >
+                + Embed
+              </Button>
+            </div>
+
+            {embeds.map((embed, idx) => (
+              <EmbedEditor
+                key={idx}
+                index={idx}
+                embed={embed}
+                onChange={(patch) => updateEmbed(idx, patch)}
+                onRemove={() => removeEmbed(idx)}
+                onDuplicate={() => duplicateEmbed(idx)}
+                canDuplicate={embeds.length < 10}
+              />
+            ))}
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={addEmbed}
-            disabled={embeds.length >= 10}
-          >
-            + Embed
-          </Button>
-        </div>
 
-        {embeds.map((embed, idx) => (
-          <EmbedEditor
-            key={idx}
-            index={idx}
-            embed={embed}
-            onChange={(patch) => updateEmbed(idx, patch)}
-            onRemove={() => removeEmbed(idx)}
-            onDuplicate={() => duplicateEmbed(idx)}
-            canDuplicate={embeds.length < 10}
-          />
-        ))}
-      </div>
-
-      {/* Components (Link-Buttons) */}
-      <ComponentsEditor rows={componentRows} onChange={setComponentRows} roles={roles} />
+          {/* Components (Link-Buttons) — nur V1, da V2 Buttons als Block hat */}
+          <ComponentsEditor rows={componentRows} onChange={setComponentRows} roles={roles} />
+        </>
+      ) : (
+        <V2ContainerEditor
+          containers={v2Containers}
+          onChange={setV2Containers}
+          roles={roles}
+        />
+      )}
 
       {/* Attachments */}
       <AttachmentsEditor files={files} onChange={setFiles} />
@@ -421,7 +511,11 @@ export function EmbedCreatorForm({
 
       {/* Preview */}
       <FormSection title="Vorschau" description={`Sendet an: ${selectedChannel ? '#' + selectedChannel.name : 'kein Channel'}`}>
-        <DiscordPreview content={content} embeds={embeds} />
+        {mode === 'v1' ? (
+          <DiscordPreview content={content} embeds={embeds} />
+        ) : (
+          <V2Preview containers={v2Containers} roles={roles} />
+        )}
       </FormSection>
 
       {/* Send */}
@@ -1300,4 +1394,162 @@ function EmbedPreview({ embed }: { embed: EmbedV2 }) {
       )}
     </div>
   );
+}
+
+// ============== V2 Preview ==============
+
+function V2Preview({
+  containers,
+  roles,
+}: {
+  containers: V2Container[];
+  roles: Role[];
+}) {
+  if (containers.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-line bg-elev/20 px-4 py-8 text-center text-[12px] text-subtle">
+        Keine Container — Vorschau leer.
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-2 rounded-lg border border-line bg-[#36393f] p-3">
+      {containers.map((c, i) => (
+        <V2ContainerPreview key={i} container={c} roles={roles} />
+      ))}
+    </div>
+  );
+}
+
+function V2ContainerPreview({
+  container,
+  roles,
+}: {
+  container: V2Container;
+  roles: Role[];
+}) {
+  const accent = colorToHex(container.accentColor ?? 0x5865f2);
+  return (
+    <div
+      className="rounded-md bg-[#2f3136] overflow-hidden"
+      style={{ borderLeft: `4px solid ${accent}` }}
+    >
+      <div className="px-3 py-2 space-y-2">
+        {container.spoiler && (
+          <div className="text-[11px] text-yellow-400/80 italic">⚠ Spoiler — Inhalt verborgen</div>
+        )}
+        {container.children.map((b, i) => (
+          <V2BlockPreview key={i} block={b} roles={roles} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function V2BlockPreview({
+  block,
+  roles,
+}: {
+  block: V2Block;
+  roles: Role[];
+}) {
+  if (block.type === 'text') {
+    return (
+      <div
+        className="text-[13.5px] text-[#dcddde] whitespace-pre-wrap leading-snug"
+        dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(block.content) }}
+      />
+    );
+  }
+  if (block.type === 'separator') {
+    return (
+      <div className={block.spacing === 2 ? 'py-2' : 'py-1'}>
+        {(block.divider ?? true) && <div className="border-t border-white/10" />}
+      </div>
+    );
+  }
+  if (block.type === 'section') {
+    return (
+      <div className="flex items-start gap-3">
+        <div
+          className="flex-1 text-[13.5px] text-[#dcddde] whitespace-pre-wrap leading-snug"
+          dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(block.text) }}
+        />
+        {block.accessory?.kind === 'thumbnail' && block.accessory.url && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={block.accessory.url}
+            alt=""
+            className="w-16 h-16 rounded object-cover shrink-0"
+          />
+        )}
+        {block.accessory?.kind === 'button' && (
+          <button
+            type="button"
+            disabled
+            className="px-3 py-1 rounded text-[12px] bg-[#4f545c] text-white shrink-0"
+          >
+            {block.accessory.label || 'Button'}
+          </button>
+        )}
+      </div>
+    );
+  }
+  if (block.type === 'media') {
+    const items = block.items.filter((i) => i.url);
+    if (items.length === 0) return null;
+    return (
+      <div
+        className="grid gap-1"
+        style={{
+          gridTemplateColumns: `repeat(${Math.min(items.length, 3)}, minmax(0, 1fr))`,
+        }}
+      >
+        {items.map((it, i) => (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            key={i}
+            src={it.url}
+            alt={it.description ?? ''}
+            className="w-full h-24 object-cover rounded"
+          />
+        ))}
+      </div>
+    );
+  }
+  if (block.type === 'file') {
+    if (!block.url) return null;
+    return (
+      <div className="text-[12px] text-blue-400 underline truncate">📎 {block.url}</div>
+    );
+  }
+  if (block.type === 'buttons') {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {block.buttons.map((b, i) => {
+          const isRole = (b.kind ?? 'link') === 'role';
+          const styleMap: Record<string, string> = {
+            primary: 'bg-[#5865f2] text-white',
+            success: 'bg-[#3ba55d] text-white',
+            danger: 'bg-[#ed4245] text-white',
+            secondary: 'bg-[#4f545c] text-white',
+            link: 'bg-[#4f545c] text-white',
+          };
+          const cls = styleMap[b.style ?? (isRole ? 'secondary' : 'link')];
+          const roleName = isRole ? roles.find((r) => r.id === b.roleId)?.name : null;
+          return (
+            <button
+              key={i}
+              type="button"
+              disabled
+              className={`px-3 py-1 rounded text-[12px] ${cls}`}
+            >
+              {b.label || (isRole ? `@${roleName ?? 'Rolle'}` : 'Link')}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+  return null;
 }
