@@ -12,7 +12,7 @@ export type WelcomeConfig = {
   dmUseEmbed: boolean;
 };
 
-export type FarewellConfig = {
+export type GoodbyeConfig = {
   enabled: boolean;
   channelId: string | null;
   message: string | null;
@@ -101,35 +101,35 @@ export async function getBoosterConfig(guildId: string): Promise<BoosterConfig |
   };
 }
 
-export async function getFarewellConfig(guildId: string): Promise<FarewellConfig | null> {
+export async function getGoodbyeConfig(guildId: string): Promise<GoodbyeConfig | null> {
   const db = getDb();
   const { data, error } = await db
     .from('bot_guilds')
     .select(
-      'farewell_enabled, farewell_channel_id, farewell_message, farewell_use_embed, farewell_embed_color',
+      'goodbye_enabled, goodbye_channel_id, goodbye_message, goodbye_use_embed, goodbye_embed_color',
     )
     .eq('guild_id', guildId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
   return {
-    enabled: Boolean(data.farewell_enabled),
-    channelId: data.farewell_channel_id ?? null,
-    message: data.farewell_message ?? null,
-    useEmbed: Boolean(data.farewell_use_embed),
-    embedColor: (data.farewell_embed_color as number | null) ?? null,
+    enabled: Boolean(data.goodbye_enabled),
+    channelId: data.goodbye_channel_id ?? null,
+    message: data.goodbye_message ?? null,
+    useEmbed: Boolean(data.goodbye_use_embed),
+    embedColor: (data.goodbye_embed_color as number | null) ?? null,
   };
 }
 
-export async function setFarewellConfig(
+export async function setGoodbyeConfig(
   guildId: string,
   patch: Partial<{ enabled: boolean; channelId: string | null; message: string | null }>,
 ): Promise<void> {
   const db = getDb();
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (patch.enabled !== undefined) update.farewell_enabled = patch.enabled;
-  if (patch.channelId !== undefined) update.farewell_channel_id = patch.channelId;
-  if (patch.message !== undefined) update.farewell_message = patch.message;
+  if (patch.enabled !== undefined) update.goodbye_enabled = patch.enabled;
+  if (patch.channelId !== undefined) update.goodbye_channel_id = patch.channelId;
+  if (patch.message !== undefined) update.goodbye_message = patch.message;
   const { error } = await db.from('bot_guilds').update(update).eq('guild_id', guildId);
   if (error) throw error;
 }

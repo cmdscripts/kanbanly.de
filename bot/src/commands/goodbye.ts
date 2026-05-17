@@ -9,9 +9,9 @@ import {
 import type { SlashCommand } from '../types.js';
 import {
   ensureGuild,
-  getFarewellConfig,
+  getGoodbyeConfig,
   renderWelcomeTemplate,
-  setFarewellConfig,
+  setGoodbyeConfig,
 } from '../db/guilds.js';
 import { sendStyled } from '../lib/sendStyled.js';
 
@@ -19,14 +19,14 @@ const DEFAULT_TEMPLATE =
   '👋 {user} hat **{server}** verlassen. Noch {members} Mitglieder übrig.';
 
 const data = new SlashCommandBuilder()
-  .setName('farewell')
+  .setName('goodbye')
   .setDescription('Abschiedsnachrichten für Mitglieder, die den Server verlassen.')
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
   .setDMPermission(false)
   .addSubcommand((sub) =>
     sub
       .setName('setup')
-      .setDescription('Farewell-Channel und -Text setzen.')
+      .setDescription('Goodbye-Channel und -Text setzen.')
       .addChannelOption((o) =>
         o
           .setName('channel')
@@ -44,15 +44,15 @@ const data = new SlashCommandBuilder()
       ),
   )
   .addSubcommand((sub) =>
-    sub.setName('disable').setDescription('Farewell-Messages deaktivieren.'),
+    sub.setName('disable').setDescription('Goodbye-Messages deaktivieren.'),
   )
   .addSubcommand((sub) =>
-    sub.setName('show').setDescription('Aktuelle Farewell-Konfiguration anzeigen.'),
+    sub.setName('show').setDescription('Aktuelle Goodbye-Konfiguration anzeigen.'),
   )
   .addSubcommand((sub) =>
     sub
       .setName('test')
-      .setDescription('Farewell-Message einmal testweise im konfigurierten Channel posten.'),
+      .setDescription('Goodbye-Message einmal testweise im konfigurierten Channel posten.'),
   );
 
 async function execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -72,27 +72,27 @@ async function execute(interaction: ChatInputCommandInteraction): Promise<void> 
     const channel = interaction.options.getChannel('channel', true);
     const messageRaw = interaction.options.getString('message');
     const message = messageRaw && messageRaw.trim().length > 0 ? messageRaw : DEFAULT_TEMPLATE;
-    await setFarewellConfig(interaction.guild.id, {
+    await setGoodbyeConfig(interaction.guild.id, {
       enabled: true,
       channelId: channel.id,
       message,
     });
     await interaction.editReply(
-      `✅ Farewell aktiviert in <#${channel.id}>.\nText: ${message}`,
+      `✅ Goodbye aktiviert in <#${channel.id}>.\nText: ${message}`,
     );
     return;
   }
 
   if (sub === 'disable') {
-    await setFarewellConfig(interaction.guild.id, { enabled: false });
-    await interaction.editReply('🔕 Farewell-Messages deaktiviert.');
+    await setGoodbyeConfig(interaction.guild.id, { enabled: false });
+    await interaction.editReply('🔕 Goodbye-Messages deaktiviert.');
     return;
   }
 
   if (sub === 'show') {
-    const cfg = await getFarewellConfig(interaction.guild.id);
+    const cfg = await getGoodbyeConfig(interaction.guild.id);
     if (!cfg || !cfg.enabled) {
-      await interaction.editReply('Farewell ist aktuell deaktiviert. `/farewell setup` zum Einrichten.');
+      await interaction.editReply('Goodbye ist aktuell deaktiviert. `/goodbye setup` zum Einrichten.');
       return;
     }
     await interaction.editReply(
@@ -102,9 +102,9 @@ async function execute(interaction: ChatInputCommandInteraction): Promise<void> 
   }
 
   if (sub === 'test') {
-    const cfg = await getFarewellConfig(interaction.guild.id);
+    const cfg = await getGoodbyeConfig(interaction.guild.id);
     if (!cfg || !cfg.enabled || !cfg.channelId) {
-      await interaction.editReply('Erst mit `/farewell setup` einrichten.');
+      await interaction.editReply('Erst mit `/goodbye setup` einrichten.');
       return;
     }
     const channel = await interaction.guild.channels

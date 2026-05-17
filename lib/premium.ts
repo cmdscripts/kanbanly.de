@@ -35,7 +35,7 @@ export type PremiumModuleKey =
 /** Module die für IMMER kostenlos sind. Alles andere ist Premium. */
 export const FREE_MODULES = new Set<string>([
   'welcome',
-  'farewell',
+  'goodbye',
   'autoroles',
   'logging',
   'levels',

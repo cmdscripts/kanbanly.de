@@ -2,8 +2,8 @@
 
 import { useRef, useState, useTransition } from 'react';
 import {
-  updateFarewellConfig,
-  sendTestFarewell,
+  updateFeedbackConfig,
+  sendTestFeedback,
 } from '@/app/(app)/integrations/discord/[guildId]/actions';
 import { TestSendButton } from './ui/TestSendButton';
 import { toast } from '@/store/toastStore';
@@ -11,7 +11,7 @@ import { Switch } from './Switch';
 import { Button } from './ui/Button';
 import { ColorPicker } from './ui/ColorPicker';
 import { FormSection, FormRow } from './ui/FormSection';
-import { StatusPill } from './ui/Status';
+import { StatusPill, StatusBanner } from './ui/Status';
 
 type Props = {
   guildId: string;
@@ -19,20 +19,25 @@ type Props = {
   initial: {
     enabled: boolean;
     channelId: string | null;
-    message: string | null;
     useEmbed: boolean;
     embedColor: number | null;
+    embedTitle: string;
+    introMessage: string;
+    footerText: string | null;
   };
 };
 
-const DEFAULT_TEMPLATE =
-  '👋 {user} hat **{server}** verlassen. Noch {members} Mitglieder übrig.';
+const DEFAULT_TITLE = 'Neues Feedback';
+const DEFAULT_INTRO =
+  '{user} hat Feedback hinterlassen\n\n**Bewertung:** {stars} ({rating}/5)\n**Kommentar:**\n{comment}';
 
 const PLACEHOLDERS: Array<{ token: string; label: string; sample: string }> = [
-  { token: '{user}', label: 'Username', sample: 'LeavingUser' },
-  { token: '{mention}', label: 'Mention', sample: '@LeavingUser' },
+  { token: '{user}', label: 'Username', sample: 'AnnaM' },
+  { token: '{mention}', label: 'Mention', sample: '@AnnaM' },
   { token: '{server}', label: 'Server', sample: 'Mein Server' },
-  { token: '{members}', label: 'Anzahl', sample: '41' },
+  { token: '{stars}', label: 'Sterne', sample: '⭐⭐⭐⭐·' },
+  { token: '{rating}', label: 'Zahl 1-5', sample: '4' },
+  { token: '{comment}', label: 'Kommentar', sample: 'Tolles Modul, läuft rund!' },
 ];
 
 function renderPreview(template: string): string {
@@ -45,18 +50,23 @@ function renderInlineMarkdown(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code class="rounded bg-elev px-1 text-[0.85em]">$1</code>');
+    .replace(/`(.+?)`/g, '<code class="rounded bg-elev px-1 text-[0.85em]">$1</code>')
+    .replace(/\n/g, '<br/>');
 }
 
-export function FarewellForm({ guildId, channels, initial }: Props) {
+export function FeedbackForm({ guildId, channels, initial }: Props) {
   const [enabled, setEnabled] = useState(initial.enabled);
   const [channelId, setChannelId] = useState(initial.channelId ?? '');
-  const [message, setMessage] = useState(initial.message ?? DEFAULT_TEMPLATE);
   const [useEmbed, setUseEmbed] = useState(initial.useEmbed);
+  const [embedTitle, setEmbedTitle] = useState(initial.embedTitle || DEFAULT_TITLE);
+  const [introMessage, setIntroMessage] = useState(
+    initial.introMessage || DEFAULT_INTRO,
+  );
+  const [footerText, setFooterText] = useState(initial.footerText ?? '');
   const [embedColor, setEmbedColor] = useState(
     initial.embedColor !== null
       ? '#' + initial.embedColor.toString(16).padStart(6, '0')
-      : '#9CA3AF',
+      : '#5865F2',
   );
   const [pending, startTransition] = useTransition();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -64,13 +74,13 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
   function insertPlaceholder(token: string) {
     const ta = textareaRef.current;
     if (!ta) {
-      setMessage((m) => m + token);
+      setIntroMessage((m) => m + token);
       return;
     }
     const start = ta.selectionStart;
     const end = ta.selectionEnd;
-    const next = message.slice(0, start) + token + message.slice(end);
-    setMessage(next);
+    const next = introMessage.slice(0, start) + token + introMessage.slice(end);
+    setIntroMessage(next);
     requestAnimationFrame(() => {
       ta.focus();
       ta.setSelectionRange(start + token.length, start + token.length);
@@ -79,39 +89,46 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (enabled && !channelId) {
+      toast.error('Feedback-Channel nötig');
+      return;
+    }
     const fd = new FormData();
     if (enabled) fd.set('enabled', 'on');
     fd.set('channel_id', channelId);
-    fd.set('message', message);
     if (useEmbed) fd.set('use_embed', 'on');
     fd.set('embed_color', embedColor);
+    fd.set('embed_title', embedTitle);
+    fd.set('intro_message', introMessage);
+    fd.set('footer_text', footerText);
     startTransition(async () => {
-      const r = await updateFarewellConfig(guildId, fd);
-      if (r.ok) {
-        toast.success('Farewell-Einstellungen gespeichert');
-      } else {
-        toast.error('Speichern fehlgeschlagen', r.error);
-      }
+      const r = await updateFeedbackConfig(guildId, fd);
+      if (r.ok) toast.success('Feedback-Einstellungen gespeichert');
+      else toast.error('Speichern fehlgeschlagen', r.error);
     });
   }
 
-  const previewHtml = renderInlineMarkdown(renderPreview(message || ' '));
+  const previewHtml = renderInlineMarkdown(renderPreview(introMessage || ' '));
   const selectedChannel = channels.find((c) => c.id === channelId);
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <FormSection
-        title="Channel-Nachricht"
-        description="Verabschiedet Mitglieder, die den Server verlassen oder gekickt werden."
+        title="Feedback-System"
+        description="User starten mit /feedback, wählen 1-5 Sterne aus einem Dropdown und können optional einen Kommentar im Modal hinterlassen. Das Ergebnis landet im konfigurierten Channel."
         badge={
           <StatusPill kind={enabled ? 'success' : 'neutral'} dot>
             {enabled ? 'Aktiv' : 'Aus'}
           </StatusPill>
         }
-        action={<Switch checked={enabled} onChange={setEnabled} ariaLabel="Farewell aktiv" />}
+        action={<Switch checked={enabled} onChange={setEnabled} ariaLabel="Feedback aktiv" />}
       >
         <div className={enabled ? 'space-y-4' : 'space-y-4 opacity-50 pointer-events-none'}>
-          <FormRow label="Channel" required>
+          <StatusBanner kind="info">
+            Ideal für Service-Bewertungen, Event-Feedback oder Bot-Verbesserungsvorschläge.
+          </StatusBanner>
+
+          <FormRow label="Feedback-Channel" hint="Hier landen alle Bewertungen" required>
             <select
               value={channelId}
               onChange={(e) => setChannelId(e.target.value)}
@@ -127,8 +144,8 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
           </FormRow>
 
           <FormRow
-            label="Nachricht"
-            hint="Markdown unterstützt: **fett**, *kursiv*, `code`. Mentions werden bewusst nicht gepingt (User ist ja weg)."
+            label="Nachricht-Template"
+            hint="Markdown unterstützt. Platzhalter unten anklicken zum Einfügen."
             required
           >
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -147,15 +164,14 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
             </div>
             <textarea
               ref={textareaRef}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={4}
-              maxLength={1000}
+              value={introMessage}
+              onChange={(e) => setIntroMessage(e.target.value.slice(0, 3500))}
+              rows={6}
               className="w-full rounded-md bg-elev border border-line-strong px-3 py-2 text-sm text-fg font-mono focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent resize-y transition-all"
             />
             <div className="mt-1 flex items-center justify-end">
               <span className="text-[10px] text-subtle font-mono tabular-nums">
-                {message.length}/1000
+                {introMessage.length}/3500
               </span>
             </div>
           </FormRow>
@@ -176,11 +192,37 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
               />
             </div>
             {useEmbed && (
-              <div className="mt-3 pt-3 border-t border-line/60">
-                <div className="text-[11.5px] font-medium text-muted mb-2">
-                  Embed-Farbe
+              <div className="mt-3 pt-3 border-t border-line/60 space-y-3">
+                <div>
+                  <div className="text-[11.5px] font-medium text-muted mb-1.5">
+                    Embed-Titel
+                  </div>
+                  <input
+                    type="text"
+                    value={embedTitle}
+                    onChange={(e) => setEmbedTitle(e.target.value.slice(0, 256))}
+                    placeholder="Neues Feedback"
+                    className="w-full rounded-md bg-elev border border-line-strong px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
+                  />
                 </div>
-                <ColorPicker value={embedColor} onChange={setEmbedColor} />
+                <div>
+                  <div className="text-[11.5px] font-medium text-muted mb-1.5">
+                    Embed-Farbe
+                  </div>
+                  <ColorPicker value={embedColor} onChange={setEmbedColor} />
+                </div>
+                <div>
+                  <div className="text-[11.5px] font-medium text-muted mb-1.5">
+                    Footer-Text
+                  </div>
+                  <input
+                    type="text"
+                    value={footerText}
+                    onChange={(e) => setFooterText(e.target.value.slice(0, 1024))}
+                    placeholder="z.B. Mein Server · Feedback"
+                    className="w-full rounded-md bg-elev border border-line-strong px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -189,7 +231,7 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
             <div className="text-[11.5px] font-medium text-muted mb-1.5">Vorschau</div>
             <div className="rounded-lg border border-line bg-elev/30 p-3.5">
               <div className="text-[11px] text-subtle mb-2">
-                {selectedChannel ? `#${selectedChannel.name}` : '#kein-channel'} · Beispiel
+                {selectedChannel ? `#${selectedChannel.name}` : '#kein-channel'} · Beispiel (4 Sterne)
               </div>
               <div className="flex gap-2.5">
                 <div className="h-8 w-8 rounded-full bg-accent/20 grid place-items-center text-[11px] font-semibold text-accent shrink-0">
@@ -208,10 +250,18 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
                       className="mt-1 rounded border-l-4 bg-elev px-3 py-2"
                       style={{ borderLeftColor: embedColor }}
                     >
+                      {embedTitle && (
+                        <div className="text-sm font-semibold text-fg mb-1">
+                          {embedTitle}
+                        </div>
+                      )}
                       <div
                         className="text-sm text-fg-soft break-words"
                         dangerouslySetInnerHTML={{ __html: previewHtml }}
                       />
+                      {footerText && (
+                        <div className="mt-2 text-[10.5px] text-subtle">{footerText}</div>
+                      )}
                     </div>
                   ) : (
                     <div
@@ -227,7 +277,7 @@ export function FarewellForm({ guildId, channels, initial }: Props) {
       </FormSection>
 
       <div className="sticky bottom-0 -mx-5 -mb-5 px-5 py-3 bg-bg/80 backdrop-blur-sm border-t border-line flex items-center justify-end gap-2">
-        <TestSendButton onSend={() => sendTestFarewell(guildId)} />
+        <TestSendButton onSend={() => sendTestFeedback(guildId)} />
         <Button type="submit" loading={pending} variant="primary">
           {pending ? 'Speichern…' : 'Speichern'}
         </Button>

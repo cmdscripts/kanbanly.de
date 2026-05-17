@@ -9,7 +9,7 @@ import { StatusPill } from './ui/Status';
 
 export type ModuleKey =
   | 'welcome'
-  | 'farewell'
+  | 'goodbye'
   | 'autoroles'
   | 'logging'
   | 'levels'
@@ -33,7 +33,8 @@ export type ModuleKey =
   | 'teamlist'
   | 'tickets'
   | 'pricelist'
-  | 'shop';
+  | 'shop'
+  | 'feedback';
 
 type ModuleDef = {
   key: ModuleKey;
@@ -76,11 +77,12 @@ const PREMIUM_MODULE_KEYS = new Set<ModuleKey>([
   'sticky',
   'channelmodes',
   'booster',
+  'feedback',
 ]);
 // (welcome, autoroles, logging, levels, embed, moderation = always free)
 const ALWAYS_FREE_KEYS = new Set<ModuleKey>([
   'welcome',
-  'farewell',
+  'goodbye',
   'autoroles',
   'logging',
   'levels',

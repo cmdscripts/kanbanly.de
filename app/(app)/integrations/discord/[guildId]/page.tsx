@@ -19,7 +19,7 @@ import {
   type DiscordRole,
 } from '@/lib/discord';
 import { WelcomeForm } from '@/components/WelcomeForm';
-import { FarewellForm } from '@/components/FarewellForm';
+import { GoodbyeForm } from '@/components/GoodbyeForm';
 import { AutoRolesForm } from '@/components/AutoRolesForm';
 import { LogConfigForm } from '@/components/LogConfigForm';
 import { LevelConfigForm } from '@/components/LevelConfigForm';
@@ -40,6 +40,7 @@ import {
   InviteTrackerForm,
 } from '@/components/Phase2FinishForms';
 import { SuggestionsForm } from '@/components/SuggestionsForm';
+import { FeedbackForm } from '@/components/FeedbackForm';
 import { HelpdeskForm } from '@/components/HelpdeskForm';
 import { TempVoiceForm } from '@/components/TempVoiceForm';
 import { DailyImageForm, TeamlistsForm } from '@/components/QuickWinsForms';
@@ -59,6 +60,10 @@ import {
 } from '@/app/(app)/integrations/discord/[guildId]/actions';
 import type { EmbedTemplate, MessagePayloadV2 } from '@/app/(app)/integrations/discord/[guildId]/actions';
 import { GuildSettingsTabs, type Tab } from '@/components/GuildSettingsTabs';
+import { BotOnboardingBanner } from '@/components/BotOnboardingBanner';
+import { BotOnboardingTour } from '@/components/BotOnboardingTour';
+import { BotOnboardingResetButton } from '@/components/BotOnboardingResetButton';
+import type { OnboardingValidationData } from '@/lib/onboardingSteps';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,7 +93,7 @@ type LoadResult =
         dmMessage: string | null;
         dmUseEmbed: boolean;
       };
-      farewell: {
+      goodbye: {
         enabled: boolean;
         channelId: string | null;
         message: string | null;
@@ -209,6 +214,15 @@ type LoadResult =
         createdAt: string;
       }>;
       suggestionPanels: SuggestionPanelRow[];
+      feedback: {
+        enabled: boolean;
+        channelId: string | null;
+        useEmbed: boolean;
+        embedColor: number | null;
+        embedTitle: string;
+        introMessage: string;
+        footerText: string | null;
+      };
       inviteTrackerEnabled: boolean;
       helpdeskPanels: Array<{
         id: string;
@@ -267,6 +281,11 @@ type LoadResult =
         winnerUserIds: string[] | null;
         entriesCount: number;
       }>;
+      onboarding: {
+        status: 'pending' | 'active' | 'skipped' | 'done';
+        currentStep: string | null;
+        progress: Array<{ stepKey: string; status: 'completed' | 'skipped' }>;
+      };
     };
 
 async function load(userId: string, guildId: string): Promise<LoadResult> {
@@ -305,7 +324,7 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
   const { data: guildRow, error: guildRowError } = await admin
     .from('bot_guilds')
     .select(
-      'welcome_enabled, welcome_channel_id, welcome_message, welcome_use_embed, welcome_embed_color, welcome_dm_enabled, welcome_dm_message, welcome_dm_use_embed, farewell_enabled, farewell_channel_id, farewell_message, farewell_use_embed, farewell_embed_color, booster_enabled, booster_channel_id, booster_message, booster_use_embed, booster_embed_color, auto_roles_enabled, auto_role_ids, log_channel_id, log_joins, log_leaves, log_message_edits, log_message_deletes, log_role_changes, level_enabled, level_announce, level_up_channel_id, level_use_embed, level_embed_color, automod_enabled, automod_block_links, automod_link_allowlist, automod_max_caps_pct, automod_max_mentions, automod_banned_words, verify_enabled, verify_channel_id, verify_role_id, verify_message, verify_panel_message_id, verify_panel_title, verify_panel_color, verify_button_label, verify_button_emoji, verify_button_style, verify_reply_success, verify_reply_already, antiraid_enabled, antiraid_join_threshold, antiraid_join_window_sec, antiraid_action, antiraid_alert_channel_id, birthday_enabled, birthday_channel_id, birthday_message, role_badges_enabled, afk_enabled, afk_channel_id, afk_timeout_minutes, suggestions_enabled, suggestions_channel_id, suggestions_mod_role_id, suggestions_embed_title, suggestions_embed_message, suggestions_embed_color, suggestions_footer_text, suggestions_banner_url, suggestions_thumbnail_url, suggestions_upvote_emoji, suggestions_downvote_emoji, suggestions_status_open_emoji, suggestions_status_ended_emoji, suggestions_allowed_role_ids, suggestions_end_message, suggestions_field_order, invite_tracker_enabled, tempvoice_enabled, tempvoice_creator_channel_id, tempvoice_category_id, tempvoice_name_template, tempvoice_default_limit, daily_image_enabled, daily_image_channel_id, daily_image_hour, daily_image_urls',
+      'welcome_enabled, welcome_channel_id, welcome_message, welcome_use_embed, welcome_embed_color, welcome_dm_enabled, welcome_dm_message, welcome_dm_use_embed, goodbye_enabled, goodbye_channel_id, goodbye_message, goodbye_use_embed, goodbye_embed_color, booster_enabled, booster_channel_id, booster_message, booster_use_embed, booster_embed_color, auto_roles_enabled, auto_role_ids, log_channel_id, log_joins, log_leaves, log_message_edits, log_message_deletes, log_role_changes, level_enabled, level_announce, level_up_channel_id, level_use_embed, level_embed_color, automod_enabled, automod_block_links, automod_link_allowlist, automod_max_caps_pct, automod_max_mentions, automod_banned_words, verify_enabled, verify_channel_id, verify_role_id, verify_message, verify_panel_message_id, verify_panel_title, verify_panel_color, verify_button_label, verify_button_emoji, verify_button_style, verify_reply_success, verify_reply_already, antiraid_enabled, antiraid_join_threshold, antiraid_join_window_sec, antiraid_action, antiraid_alert_channel_id, birthday_enabled, birthday_channel_id, birthday_message, role_badges_enabled, afk_enabled, afk_channel_id, afk_timeout_minutes, suggestions_enabled, suggestions_channel_id, suggestions_mod_role_id, suggestions_embed_title, suggestions_embed_message, suggestions_embed_color, suggestions_footer_text, suggestions_banner_url, suggestions_thumbnail_url, suggestions_upvote_emoji, suggestions_downvote_emoji, suggestions_status_open_emoji, suggestions_status_ended_emoji, suggestions_allowed_role_ids, suggestions_end_message, suggestions_field_order, feedback_enabled, feedback_channel_id, feedback_use_embed, feedback_embed_color, feedback_embed_title, feedback_intro_message, feedback_footer_text, invite_tracker_enabled, tempvoice_enabled, tempvoice_creator_channel_id, tempvoice_category_id, tempvoice_name_template, tempvoice_default_limit, daily_image_enabled, daily_image_channel_id, daily_image_hour, daily_image_urls',
     )
     .eq('guild_id', guildId)
     .maybeSingle();
@@ -603,6 +622,33 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
     roles: rolesByMessage.get(m.message_id as string) ?? [],
   }));
 
+  // Onboarding-Tour: State + Progress für (guild, user) laden.
+  const { data: onbStateRow } = await admin
+    .from('bot_onboarding_state')
+    .select('status, current_step')
+    .eq('guild_id', guildId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  const { data: onbProgressRaw } = await admin
+    .from('bot_onboarding_progress')
+    .select('step_key, status')
+    .eq('guild_id', guildId)
+    .eq('user_id', userId);
+  const onboarding = {
+    status:
+      ((onbStateRow?.status as
+        | 'pending'
+        | 'active'
+        | 'skipped'
+        | 'done'
+        | null) ?? 'pending'),
+    currentStep: (onbStateRow?.current_step as string | null) ?? null,
+    progress: (onbProgressRaw ?? []).map((r) => ({
+      stepKey: r.step_key as string,
+      status: r.status as 'completed' | 'skipped',
+    })),
+  };
+
   return {
     kind: 'ok',
     guildName: guildName ?? guildId,
@@ -620,12 +666,12 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
       dmMessage: (guildRow.welcome_dm_message as string | null) ?? null,
       dmUseEmbed: Boolean(guildRow.welcome_dm_use_embed),
     },
-    farewell: {
-      enabled: Boolean(guildRow.farewell_enabled),
-      channelId: (guildRow.farewell_channel_id as string | null) ?? null,
-      message: (guildRow.farewell_message as string | null) ?? null,
-      useEmbed: Boolean(guildRow.farewell_use_embed),
-      embedColor: (guildRow.farewell_embed_color as number | null) ?? null,
+    goodbye: {
+      enabled: Boolean(guildRow.goodbye_enabled),
+      channelId: (guildRow.goodbye_channel_id as string | null) ?? null,
+      message: (guildRow.goodbye_message as string | null) ?? null,
+      useEmbed: Boolean(guildRow.goodbye_use_embed),
+      embedColor: (guildRow.goodbye_embed_color as number | null) ?? null,
     },
     booster: {
       enabled: Boolean(guildRow.booster_enabled),
@@ -728,6 +774,18 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
     },
     suggestionsList,
     suggestionPanels,
+    feedback: {
+      enabled: Boolean(guildRow.feedback_enabled),
+      channelId: (guildRow.feedback_channel_id as string | null) ?? null,
+      useEmbed: guildRow.feedback_use_embed === false ? false : true,
+      embedColor: (guildRow.feedback_embed_color as number | null) ?? null,
+      embedTitle:
+        (guildRow.feedback_embed_title as string | null) ?? 'Neues Feedback',
+      introMessage:
+        (guildRow.feedback_intro_message as string | null) ??
+        '{user} hat Feedback hinterlassen\n\n**Bewertung:** {stars} ({rating}/5)\n**Kommentar:**\n{comment}',
+      footerText: (guildRow.feedback_footer_text as string | null) ?? null,
+    },
     inviteTrackerEnabled: Boolean(guildRow.invite_tracker_enabled),
     helpdeskPanels,
     tempvoice: {
@@ -790,6 +848,7 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
           )
         : [],
     },
+    onboarding,
   };
 }
 
@@ -866,6 +925,43 @@ export default async function GuildSettingsPage({
           <div className="hidden" />
         )}
 
+        {result.kind === 'ok' && result.onboarding.status === 'pending' && (
+          <BotOnboardingBanner guildId={guildId} />
+        )}
+
+        {result.kind === 'ok' && result.onboarding.status === 'active' && (
+          <BotOnboardingTour
+            guildId={guildId}
+            currentStepKey={result.onboarding.currentStep}
+            completedSteps={result.onboarding.progress}
+            data={
+              {
+                welcome: {
+                  enabled: result.welcome.enabled,
+                  channelId: result.welcome.channelId,
+                },
+                goodbye: {
+                  enabled: result.goodbye.enabled,
+                  channelId: result.goodbye.channelId,
+                },
+                autoRoles: {
+                  enabled: result.autoRoles.enabled,
+                  roleIds: result.autoRoles.roleIds,
+                },
+                log: { channelId: result.log.channelId },
+                level: { enabled: result.level.enabled },
+                automod: { enabled: result.automod.enabled },
+                reactionRoleMessagesCount: result.reactionRoleMessages.length,
+                verify: {
+                  enabled: result.verify.enabled,
+                  channelId: result.verify.channelId,
+                  roleId: result.verify.roleId,
+                },
+              } satisfies OnboardingValidationData
+            }
+          />
+        )}
+
         {result.kind === 'ok' && (
           <GuildSettingsView
             guildName={result.guildName}
@@ -883,7 +979,7 @@ export default async function GuildSettingsPage({
               color: r.color,
             }))}
             welcome={result.welcome}
-            farewell={result.farewell}
+            goodbye={result.goodbye}
             booster={result.booster}
             stickyMessages={result.stickyMessages}
             channelModes={result.channelModes}
@@ -905,6 +1001,7 @@ export default async function GuildSettingsPage({
             suggestions={result.suggestions}
             suggestionsList={result.suggestionsList}
             suggestionPanels={result.suggestionPanels}
+            feedback={result.feedback}
             inviteTrackerEnabled={result.inviteTrackerEnabled}
             helpdeskPanels={result.helpdeskPanels}
             tempvoice={result.tempvoice}
@@ -914,6 +1011,7 @@ export default async function GuildSettingsPage({
             pricelistPanels={result.pricelistPanels}
             premium={result.premium}
             customization={result.customization}
+            onboardingStatus={result.onboarding.status}
           />
         )}
       </div>
@@ -929,7 +1027,7 @@ function GuildSettingsView({
   voiceChannels,
   roles,
   welcome,
-  farewell,
+  goodbye,
   booster,
   stickyMessages,
   channelModes,
@@ -951,6 +1049,7 @@ function GuildSettingsView({
   suggestions,
   suggestionsList,
   suggestionPanels,
+  feedback,
   inviteTrackerEnabled,
   helpdeskPanels,
   tempvoice,
@@ -960,6 +1059,7 @@ function GuildSettingsView({
   pricelistPanels,
   premium,
   customization,
+  onboardingStatus,
 }: {
   guildName: string;
   guildId: string;
@@ -967,6 +1067,7 @@ function GuildSettingsView({
   channels: Array<{ id: string; name: string }>;
   voiceChannels: Array<{ id: string; name: string }>;
   roles: Array<{ id: string; name: string; color: number }>;
+  onboardingStatus: 'pending' | 'active' | 'skipped' | 'done';
   welcome: {
     enabled: boolean;
     channelId: string | null;
@@ -977,7 +1078,7 @@ function GuildSettingsView({
     dmMessage: string | null;
     dmUseEmbed: boolean;
   };
-  farewell: {
+  goodbye: {
     enabled: boolean;
     channelId: string | null;
     message: string | null;
@@ -1106,6 +1207,15 @@ function GuildSettingsView({
     createdAt: string;
   }>;
   suggestionPanels: SuggestionPanelRow[];
+  feedback: {
+    enabled: boolean;
+    channelId: string | null;
+    useEmbed: boolean;
+    embedColor: number | null;
+    embedTitle: string;
+    introMessage: string;
+    footerText: string | null;
+  };
   inviteTrackerEnabled: boolean;
   helpdeskPanels: Array<{
     id: string;
@@ -1164,11 +1274,11 @@ function GuildSettingsView({
       toggleable: true,
     },
     {
-      key: 'farewell' as const,
-      name: 'Farewell',
+      key: 'goodbye' as const,
+      name: 'Goodbye',
       description: 'Verabschiedet Mitglieder, die den Server verlassen oder gekickt werden.',
-      tab: 'farewell',
-      enabled: farewell.enabled,
+      tab: 'goodbye',
+      enabled: goodbye.enabled,
       toggleable: true,
       isNew: true,
     },
@@ -1322,6 +1432,15 @@ function GuildSettingsView({
       isNew: true,
     },
     {
+      key: 'feedback' as const,
+      name: 'Feedback',
+      description: '/feedback — User wählen 1-5 Sterne im Dropdown und können optional kommentieren.',
+      tab: 'feedback',
+      enabled: feedback.enabled,
+      toggleable: true,
+      isNew: true,
+    },
+    {
       key: 'invitetracker' as const,
       name: 'Invite-Tracker',
       description: 'Wer hat wen eingeladen — mit Leaderboard.',
@@ -1419,12 +1538,12 @@ function GuildSettingsView({
       ),
     },
     {
-      id: 'farewell',
-      label: 'Farewell',
+      id: 'goodbye',
+      label: 'Goodbye',
       icon: '👋',
       description: 'Abschieds-Nachricht für Mitglieder, die den Server verlassen.',
       content: (
-        <FarewellForm guildId={guildId} channels={channels} initial={farewell} />
+        <GoodbyeForm guildId={guildId} channels={channels} initial={goodbye} />
       ),
     },
     {
@@ -1612,6 +1731,15 @@ function GuildSettingsView({
       ),
     },
     {
+      id: 'feedback',
+      label: 'Feedback',
+      icon: '⭐',
+      description: 'Sterne-Bewertungen mit optionalem Kommentar in einen Channel.',
+      content: (
+        <FeedbackForm guildId={guildId} channels={channels} initial={feedback} />
+      ),
+    },
+    {
       id: 'invitetracker',
       label: 'Invite-Tracker',
       icon: '📨',
@@ -1751,6 +1879,11 @@ function GuildSettingsView({
             <span className="font-mono text-subtle truncate">{guildId}</span>
           </div>
         </div>
+        {onboardingStatus !== 'active' && (
+          <div className="shrink-0">
+            <BotOnboardingResetButton guildId={guildId} />
+          </div>
+        )}
       </div>
 
       <GuildSettingsTabs tabs={tabs} />

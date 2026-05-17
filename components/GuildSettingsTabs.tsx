@@ -33,6 +33,21 @@ export function GuildSettingsTabs({ tabs, defaultTab }: Props) {
     return () => window.removeEventListener('hashchange', fromHash);
   }, [tabs]);
 
+  // Externe Tab-Steuerung (z. B. via Onboarding-Tour).
+  useEffect(() => {
+    const onTourGo = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (typeof detail === 'string' && tabs.some((t) => t.id === detail)) {
+        setActive(detail);
+        if (typeof window !== 'undefined') {
+          history.replaceState(null, '', `#${detail}`);
+        }
+      }
+    };
+    window.addEventListener('kanbanly:tour-go', onTourGo);
+    return () => window.removeEventListener('kanbanly:tour-go', onTourGo);
+  }, [tabs]);
+
   const switchTo = (id: string) => {
     setActive(id);
     if (typeof window !== 'undefined') {

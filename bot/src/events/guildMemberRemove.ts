@@ -1,5 +1,5 @@
 import { Events, type Client, type GuildMember, type PartialGuildMember, type TextChannel } from 'discord.js';
-import { getFarewellConfig, renderWelcomeTemplate } from '../db/guilds.js';
+import { getGoodbyeConfig, renderWelcomeTemplate } from '../db/guilds.js';
 import { sendStyled } from '../lib/sendStyled.js';
 
 export function registerGuildMemberRemove(client: Client): void {
@@ -7,7 +7,7 @@ export function registerGuildMemberRemove(client: Client): void {
     try {
       if (member.user?.bot) return;
 
-      const cfg = await getFarewellConfig(member.guild.id);
+      const cfg = await getGoodbyeConfig(member.guild.id);
       if (!cfg || !cfg.enabled || !cfg.channelId || !cfg.message) return;
 
       const channel = await member.guild.channels.fetch(cfg.channelId).catch(() => null);
@@ -28,7 +28,7 @@ export function registerGuildMemberRemove(client: Client): void {
         allowedMentions: { parse: [] },
       });
     } catch (err) {
-      console.error('[farewell] Fehler beim Abschiednehmen:', err);
+      console.error('[goodbye] Fehler beim Abschiednehmen:', err);
     }
   });
 }

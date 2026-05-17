@@ -322,7 +322,7 @@ export async function updateWelcomeConfig(
   }
 }
 
-export async function updateFarewellConfig(
+export async function updateGoodbyeConfig(
   guildId: string,
   formData: FormData,
 ): Promise<{ ok: boolean; error?: string }> {
@@ -339,18 +339,18 @@ export async function updateFarewellConfig(
       : null;
 
     if (enabled && (!channelId || !message)) {
-      return { ok: false, error: 'Channel und Nachricht sind nötig, wenn Farewell aktiv ist.' };
+      return { ok: false, error: 'Channel und Nachricht sind nötig, wenn Goodbye aktiv ist.' };
     }
 
     const admin = createAdminClient();
     const { error } = await admin
       .from('bot_guilds')
       .update({
-        farewell_enabled: enabled,
-        farewell_channel_id: channelId,
-        farewell_message: message,
-        farewell_use_embed: useEmbed,
-        farewell_embed_color: embedColor,
+        goodbye_enabled: enabled,
+        goodbye_channel_id: channelId,
+        goodbye_message: message,
+        goodbye_use_embed: useEmbed,
+        goodbye_embed_color: embedColor,
         updated_at: new Date().toISOString(),
       })
       .eq('guild_id', guildId);
@@ -3076,7 +3076,7 @@ export async function getTicketTranscript(
 
 type ModuleKey =
   | 'welcome'
-  | 'farewell'
+  | 'goodbye'
   | 'autoroles'
   | 'logging'
   | 'levels'
@@ -3100,7 +3100,8 @@ type ModuleKey =
   | 'teamlist'
   | 'tickets'
   | 'pricelist'
-  | 'shop';
+  | 'shop'
+  | 'feedback';
 
 export async function toggleBotModule(
   guildId: string,
@@ -3116,8 +3117,8 @@ export async function toggleBotModule(
       case 'welcome':
         patch.welcome_enabled = enabled;
         break;
-      case 'farewell':
-        patch.farewell_enabled = enabled;
+      case 'goodbye':
+        patch.goodbye_enabled = enabled;
         break;
       case 'autoroles':
         patch.auto_roles_enabled = enabled;
@@ -3157,6 +3158,9 @@ export async function toggleBotModule(
         break;
       case 'dailyimage':
         patch.daily_image_enabled = enabled;
+        break;
+      case 'feedback':
+        patch.feedback_enabled = enabled;
         break;
       default:
         return {
@@ -3621,7 +3625,7 @@ export async function sendTestWelcome(
   }
 }
 
-export async function sendTestFarewell(
+export async function sendTestGoodbye(
   guildId: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
@@ -3630,21 +3634,21 @@ export async function sendTestFarewell(
     const { data: cfg } = await admin
       .from('bot_guilds')
       .select(
-        'farewell_channel_id, farewell_message, farewell_use_embed, farewell_embed_color',
+        'goodbye_channel_id, goodbye_message, goodbye_use_embed, goodbye_embed_color',
       )
       .eq('guild_id', guildId)
       .maybeSingle();
-    if (!cfg || !cfg.farewell_channel_id || !cfg.farewell_message) {
-      return { ok: false, error: 'Farewell-Channel und Nachricht konfigurieren + speichern.' };
+    if (!cfg || !cfg.goodbye_channel_id || !cfg.goodbye_message) {
+      return { ok: false, error: 'Goodbye-Channel und Nachricht konfigurieren + speichern.' };
     }
     const ctx = await getTestContext(guildId);
-    const text = renderTestTemplate(cfg.farewell_message as string, ctx);
+    const text = renderTestTemplate(cfg.goodbye_message as string, ctx);
     const payload = buildTestPayload({
       text,
-      useEmbed: Boolean(cfg.farewell_use_embed),
-      color: (cfg.farewell_embed_color as number | null) ?? null,
+      useEmbed: Boolean(cfg.goodbye_use_embed),
+      color: (cfg.goodbye_embed_color as number | null) ?? null,
     });
-    await postMessage(cfg.farewell_channel_id as string, payload);
+    await postMessage(cfg.goodbye_channel_id as string, payload);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
@@ -5029,6 +5033,252 @@ export async function resetBotCustomization(
       .eq('guild_id', guildId);
     if (error) throw error;
     revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Onboarding-Tour
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { ONBOARDING_STEPS, getNextStep } from '@/lib/onboardingSteps';
+
+export async function startOnboarding(
+  guildId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { userId } = await assertCanManage(guildId);
+    const supabase = await createClient();
+    const firstStep = ONBOARDING_STEPS[0]?.key ?? null;
+    const { error } = await supabase
+      .from('bot_onboarding_state')
+      .upsert(
+        {
+          guild_id: guildId,
+          user_id: userId,
+          status: 'active',
+          current_step: firstStep,
+          started_at: new Date().toISOString(),
+          finished_at: null,
+        },
+        { onConflict: 'guild_id,user_id' },
+      );
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+export async function advanceOnboarding(
+  guildId: string,
+  completedStepKey: string,
+  outcome: 'completed' | 'skipped',
+): Promise<{ ok: boolean; error?: string; done?: boolean; nextStep?: string | null }> {
+  try {
+    const { userId } = await assertCanManage(guildId);
+    const supabase = await createClient();
+
+    const { error: pErr } = await supabase
+      .from('bot_onboarding_progress')
+      .upsert(
+        {
+          guild_id: guildId,
+          user_id: userId,
+          step_key: completedStepKey,
+          status: outcome,
+          completed_at: new Date().toISOString(),
+        },
+        { onConflict: 'guild_id,user_id,step_key' },
+      );
+    if (pErr) throw pErr;
+
+    const next = getNextStep(completedStepKey);
+    if (!next) {
+      const { error: sErr } = await supabase
+        .from('bot_onboarding_state')
+        .update({
+          status: 'done',
+          current_step: null,
+          finished_at: new Date().toISOString(),
+        })
+        .eq('guild_id', guildId)
+        .eq('user_id', userId);
+      if (sErr) throw sErr;
+      revalidatePath(`/integrations/discord/${guildId}`);
+      return { ok: true, done: true, nextStep: null };
+    }
+
+    const { error: sErr } = await supabase
+      .from('bot_onboarding_state')
+      .update({ status: 'active', current_step: next.key })
+      .eq('guild_id', guildId)
+      .eq('user_id', userId);
+    if (sErr) throw sErr;
+
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true, done: false, nextStep: next.key };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+export async function dismissOnboarding(
+  guildId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { userId } = await assertCanManage(guildId);
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('bot_onboarding_state')
+      .upsert(
+        {
+          guild_id: guildId,
+          user_id: userId,
+          status: 'skipped',
+          current_step: null,
+          finished_at: new Date().toISOString(),
+        },
+        { onConflict: 'guild_id,user_id' },
+      );
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+export async function resetOnboarding(
+  guildId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { userId } = await assertCanManage(guildId);
+    const supabase = await createClient();
+    await supabase
+      .from('bot_onboarding_progress')
+      .delete()
+      .eq('guild_id', guildId)
+      .eq('user_id', userId);
+    const firstStep = ONBOARDING_STEPS[0]?.key ?? null;
+    const { error } = await supabase
+      .from('bot_onboarding_state')
+      .upsert(
+        {
+          guild_id: guildId,
+          user_id: userId,
+          status: 'active',
+          current_step: firstStep,
+          started_at: new Date().toISOString(),
+          finished_at: null,
+        },
+        { onConflict: 'guild_id,user_id' },
+      );
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+// ============== Feedback ==============
+
+export async function updateFeedbackConfig(
+  guildId: string,
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertCanManage(guildId);
+
+    const enabled = formData.get('enabled') === 'on';
+    const channelId = (formData.get('channel_id') as string | null)?.trim() || null;
+    const useEmbed = formData.get('use_embed') === 'on';
+    const embedTitle =
+      (formData.get('embed_title') as string | null)?.trim().slice(0, 256) || null;
+    const introMessage =
+      (formData.get('intro_message') as string | null)?.trim().slice(0, 3500) || null;
+    const footerText =
+      (formData.get('footer_text') as string | null)?.trim().slice(0, 1024) || null;
+    const embedColorRaw = (formData.get('embed_color') as string | null)?.trim() || null;
+    const embedColor =
+      embedColorRaw && /^#?[0-9a-f]{6}$/i.test(embedColorRaw)
+        ? parseInt(embedColorRaw.replace('#', ''), 16)
+        : null;
+
+    if (enabled && !channelId) {
+      return { ok: false, error: 'Feedback-Channel ist nötig, wenn Feedback aktiv ist.' };
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('bot_guilds')
+      .update({
+        feedback_enabled: enabled,
+        feedback_channel_id: channelId,
+        feedback_use_embed: useEmbed,
+        feedback_embed_color: embedColor,
+        feedback_embed_title: embedTitle,
+        feedback_intro_message: introMessage,
+        feedback_footer_text: footerText,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('guild_id', guildId);
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+export async function sendTestFeedback(
+  guildId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertCanManage(guildId);
+    const admin = createAdminClient();
+    const { data: cfg } = await admin
+      .from('bot_guilds')
+      .select(
+        'feedback_channel_id, feedback_use_embed, feedback_embed_color, feedback_embed_title, feedback_intro_message, feedback_footer_text',
+      )
+      .eq('guild_id', guildId)
+      .maybeSingle();
+    if (!cfg || !cfg.feedback_channel_id) {
+      return { ok: false, error: 'Feedback-Channel konfigurieren + speichern.' };
+    }
+    const ctx = await getTestContext(guildId);
+    const intro =
+      (cfg.feedback_intro_message as string | null) ??
+      '{user} hat Feedback hinterlassen\n\n**Bewertung:** {stars} ({rating}/5)\n**Kommentar:**\n{comment}';
+    const rating = 4;
+    const stars = '⭐'.repeat(rating) + '·'.repeat(5 - rating);
+    const text = intro
+      .replaceAll('{user}', ctx.username)
+      .replaceAll('{mention}', ctx.mention)
+      .replaceAll('{server}', ctx.serverName)
+      .replaceAll('{rating}', String(rating))
+      .replaceAll('{stars}', stars)
+      .replaceAll('{comment}', 'Tolles Modul, läuft rund!');
+
+    const useEmbed = cfg.feedback_use_embed === false ? false : true;
+    const title = (cfg.feedback_embed_title as string | null) ?? 'Neues Feedback';
+    const footer = (cfg.feedback_footer_text as string | null) ?? null;
+
+    const payload = buildTestPayload({
+      text,
+      useEmbed,
+      color: (cfg.feedback_embed_color as number | null) ?? null,
+      title,
+    });
+    if (useEmbed && footer && payload.embeds && payload.embeds[0]) {
+      payload.embeds[0].footer = { text: `${footer} ${TEST_FOOTER}` };
+    }
+    await postMessage(cfg.feedback_channel_id as string, payload);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };

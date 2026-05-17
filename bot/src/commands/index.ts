@@ -2,7 +2,7 @@ import type { SlashCommand } from '../types.js';
 import ping from './ping.js';
 import help from './help.js';
 import welcome from './welcome.js';
-import farewell from './farewell.js';
+import goodbye from './goodbye.js';
 import reactionroles from './reactionroles.js';
 import warn from './warn.js';
 import kick from './kick.js';
@@ -24,12 +24,13 @@ import birthday from './birthday.js';
 import suggest from './suggest.js';
 import guess from './guess.js';
 import bypass from './bypass.js';
+import feedback from './feedback.js';
 
 export const commands: SlashCommand[] = [
   ping,
   help,
   welcome,
-  farewell,
+  goodbye,
   reactionroles,
   warn,
   kick,
@@ -51,5 +52,6 @@ export const commands: SlashCommand[] = [
   suggest,
   guess,
   bypass,
+  feedback,
 ];
 export const commandMap = new Map(commands.map((c) => [c.data.name, c]));
