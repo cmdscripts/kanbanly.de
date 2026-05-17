@@ -322,6 +322,46 @@ export async function updateWelcomeConfig(
   }
 }
 
+export async function updateFarewellConfig(
+  guildId: string,
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertCanManage(guildId);
+
+    const enabled = formData.get('enabled') === 'on';
+    const channelId = (formData.get('channel_id') as string | null)?.trim() || null;
+    const message = (formData.get('message') as string | null)?.trim() || null;
+    const useEmbed = formData.get('use_embed') === 'on';
+    const embedColorRaw = (formData.get('embed_color') as string | null)?.trim() || null;
+    const embedColor = embedColorRaw && /^#?[0-9a-f]{6}$/i.test(embedColorRaw)
+      ? parseInt(embedColorRaw.replace('#', ''), 16)
+      : null;
+
+    if (enabled && (!channelId || !message)) {
+      return { ok: false, error: 'Channel und Nachricht sind nötig, wenn Farewell aktiv ist.' };
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('bot_guilds')
+      .update({
+        farewell_enabled: enabled,
+        farewell_channel_id: channelId,
+        farewell_message: message,
+        farewell_use_embed: useEmbed,
+        farewell_embed_color: embedColor,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('guild_id', guildId);
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
 export async function updateBoosterConfig(
   guildId: string,
   formData: FormData,
@@ -3036,6 +3076,7 @@ export async function getTicketTranscript(
 
 type ModuleKey =
   | 'welcome'
+  | 'farewell'
   | 'autoroles'
   | 'logging'
   | 'levels'
@@ -3074,6 +3115,9 @@ export async function toggleBotModule(
     switch (key) {
       case 'welcome':
         patch.welcome_enabled = enabled;
+        break;
+      case 'farewell':
+        patch.farewell_enabled = enabled;
         break;
       case 'autoroles':
         patch.auto_roles_enabled = enabled;
@@ -3571,6 +3615,36 @@ export async function sendTestWelcome(
       color: (cfg.welcome_embed_color as number | null) ?? null,
     });
     await postMessage(cfg.welcome_channel_id as string, payload);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+export async function sendTestFarewell(
+  guildId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertCanManage(guildId);
+    const admin = createAdminClient();
+    const { data: cfg } = await admin
+      .from('bot_guilds')
+      .select(
+        'farewell_channel_id, farewell_message, farewell_use_embed, farewell_embed_color',
+      )
+      .eq('guild_id', guildId)
+      .maybeSingle();
+    if (!cfg || !cfg.farewell_channel_id || !cfg.farewell_message) {
+      return { ok: false, error: 'Farewell-Channel und Nachricht konfigurieren + speichern.' };
+    }
+    const ctx = await getTestContext(guildId);
+    const text = renderTestTemplate(cfg.farewell_message as string, ctx);
+    const payload = buildTestPayload({
+      text,
+      useEmbed: Boolean(cfg.farewell_use_embed),
+      color: (cfg.farewell_embed_color as number | null) ?? null,
+    });
+    await postMessage(cfg.farewell_channel_id as string, payload);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
@@ -4875,6 +4949,87 @@ export async function createPremiumPortal(
       returnUrl: `${origin}/integrations/discord/${guildId}`,
     });
     return { ok: true, url: session.url };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+// ============== Bot-Customization (Nickname + Server-Avatar pro Guild) ==============
+
+export type BotCustomization = {
+  nickname: string | null;
+  avatarUrl: string | null;
+  updatedAt: string | null;
+};
+
+export async function getBotCustomization(
+  guildId: string,
+): Promise<BotCustomization> {
+  await assertCanManage(guildId);
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from('bot_guild_customization')
+    .select('nickname, avatar_url, updated_at')
+    .eq('guild_id', guildId)
+    .maybeSingle();
+  if (!data) return { nickname: null, avatarUrl: null, updatedAt: null };
+  return {
+    nickname: (data.nickname as string | null) ?? null,
+    avatarUrl: (data.avatar_url as string | null) ?? null,
+    updatedAt: (data.updated_at as string | null) ?? null,
+  };
+}
+
+export async function saveBotCustomization(
+  guildId: string,
+  input: { nickname: string | null; avatarUrl: string | null },
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { userId } = await assertCanManage(guildId);
+
+    const nickname = input.nickname?.trim() || null;
+    if (nickname && nickname.length > 32) {
+      return { ok: false, error: 'Nickname max. 32 Zeichen.' };
+    }
+    const avatarUrl = input.avatarUrl?.trim() || null;
+    if (avatarUrl && !/^https?:\/\//i.test(avatarUrl)) {
+      return { ok: false, error: 'Avatar-URL muss mit http(s):// beginnen.' };
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('bot_guild_customization')
+      .upsert(
+        {
+          guild_id: guildId,
+          nickname,
+          avatar_url: avatarUrl,
+          updated_by: userId,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'guild_id' },
+      );
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
+  }
+}
+
+export async function resetBotCustomization(
+  guildId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await assertCanManage(guildId);
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('bot_guild_customization')
+      .delete()
+      .eq('guild_id', guildId);
+    if (error) throw error;
+    revalidatePath(`/integrations/discord/${guildId}`);
+    return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Unbekannter Fehler.' };
   }

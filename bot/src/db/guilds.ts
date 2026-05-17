@@ -12,6 +12,14 @@ export type WelcomeConfig = {
   dmUseEmbed: boolean;
 };
 
+export type FarewellConfig = {
+  enabled: boolean;
+  channelId: string | null;
+  message: string | null;
+  useEmbed: boolean;
+  embedColor: number | null;
+};
+
 export type BoosterConfig = {
   enabled: boolean;
   channelId: string | null;
@@ -91,6 +99,39 @@ export async function getBoosterConfig(guildId: string): Promise<BoosterConfig |
     useEmbed: Boolean(data.booster_use_embed),
     embedColor: (data.booster_embed_color as number | null) ?? null,
   };
+}
+
+export async function getFarewellConfig(guildId: string): Promise<FarewellConfig | null> {
+  const db = getDb();
+  const { data, error } = await db
+    .from('bot_guilds')
+    .select(
+      'farewell_enabled, farewell_channel_id, farewell_message, farewell_use_embed, farewell_embed_color',
+    )
+    .eq('guild_id', guildId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    enabled: Boolean(data.farewell_enabled),
+    channelId: data.farewell_channel_id ?? null,
+    message: data.farewell_message ?? null,
+    useEmbed: Boolean(data.farewell_use_embed),
+    embedColor: (data.farewell_embed_color as number | null) ?? null,
+  };
+}
+
+export async function setFarewellConfig(
+  guildId: string,
+  patch: Partial<{ enabled: boolean; channelId: string | null; message: string | null }>,
+): Promise<void> {
+  const db = getDb();
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (patch.enabled !== undefined) update.farewell_enabled = patch.enabled;
+  if (patch.channelId !== undefined) update.farewell_channel_id = patch.channelId;
+  if (patch.message !== undefined) update.farewell_message = patch.message;
+  const { error } = await db.from('bot_guilds').update(update).eq('guild_id', guildId);
+  if (error) throw error;
 }
 
 export async function setWelcomeConfig(

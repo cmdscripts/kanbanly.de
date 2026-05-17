@@ -9,6 +9,7 @@ import { StatusPill } from './ui/Status';
 
 export type ModuleKey =
   | 'welcome'
+  | 'farewell'
   | 'autoroles'
   | 'logging'
   | 'levels'
@@ -79,6 +80,7 @@ const PREMIUM_MODULE_KEYS = new Set<ModuleKey>([
 // (welcome, autoroles, logging, levels, embed, moderation = always free)
 const ALWAYS_FREE_KEYS = new Set<ModuleKey>([
   'welcome',
+  'farewell',
   'autoroles',
   'logging',
   'levels',

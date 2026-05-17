@@ -325,15 +325,18 @@ export function AfkForm({
         action={<Switch checked={enabled} onChange={setEnabled} />}
       >
         <div className={enabled ? 'space-y-4' : 'space-y-4 opacity-50 pointer-events-none'}>
-          <FormRow label="AFK-Voice-Channel" hint="Discord-Server-Einstellungen → AFK-Channel separat setzen." required>
+          <FormRow label="AFK-Voice-Channel" hint="Ziel-Voice-Channel, in den stumm/taube User verschoben werden." required>
             <select
               value={channelId}
               onChange={(e) => setChannelId(e.target.value)}
               className="w-full rounded-md bg-elev border border-line-strong px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all"
             >
-              <option value="">— Channel wählen —</option>
+              <option value="">— Voice-Channel wählen —</option>
+              {channels.length === 0 && (
+                <option value="" disabled>Keine Voice-Channels auf diesem Server</option>
+              )}
               {channels.map((c) => (
-                <option key={c.id} value={c.id}>#{c.name}</option>
+                <option key={c.id} value={c.id}>🔊 {c.name}</option>
               ))}
             </select>
           </FormRow>
@@ -350,12 +353,6 @@ export function AfkForm({
           </FormRow>
         </div>
       </FormSection>
-
-      <StatusBanner kind="info">
-        Hinweis: Die Channel-Liste zeigt aktuell Text-Channels. Für AFK brauchst du
-        einen <strong>Voice-Channel</strong> — gib die ID direkt im Discord ein oder
-        beachte dass der Channel-Picker hier nur Text-Channels listet.
-      </StatusBanner>
 
       <div className="sticky bottom-0 -mx-5 -mb-5 px-5 py-3 bg-bg/80 backdrop-blur-sm border-t border-line flex justify-end">
         <Button type="submit" loading={pending} variant="primary">

@@ -5,7 +5,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getFreshAccessToken } from '@/lib/discordConnection';
 import {
   CHANNEL_TYPE_ANNOUNCEMENT,
+  CHANNEL_TYPE_STAGE,
   CHANNEL_TYPE_TEXT,
+  CHANNEL_TYPE_VOICE,
   DiscordRateLimitError,
   canManageGuild,
   fetchCurrentUserGuilds,
@@ -17,6 +19,7 @@ import {
   type DiscordRole,
 } from '@/lib/discord';
 import { WelcomeForm } from '@/components/WelcomeForm';
+import { FarewellForm } from '@/components/FarewellForm';
 import { AutoRolesForm } from '@/components/AutoRolesForm';
 import { LogConfigForm } from '@/components/LogConfigForm';
 import { LevelConfigForm } from '@/components/LevelConfigForm';
@@ -44,6 +47,7 @@ import { TicketsForm } from '@/components/TicketsForm';
 import { PricelistForm } from '@/components/PricelistForm';
 import { ShopForm } from '@/components/ShopForm';
 import { PremiumForm } from '@/components/PremiumForm';
+import { BotCustomizationForm } from '@/components/BotCustomizationForm';
 import { isGuildPremium } from '@/lib/premium';
 import {
   listTicketPanels,
@@ -72,6 +76,7 @@ type LoadResult =
       guildName: string;
       guildIcon: string | null;
       channels: DiscordChannel[];
+      voiceChannels: DiscordChannel[];
       roles: DiscordRole[];
       welcome: {
         enabled: boolean;
@@ -82,6 +87,13 @@ type LoadResult =
         dmEnabled: boolean;
         dmMessage: string | null;
         dmUseEmbed: boolean;
+      };
+      farewell: {
+        enabled: boolean;
+        channelId: string | null;
+        message: string | null;
+        useEmbed: boolean;
+        embedColor: number | null;
       };
       booster: {
         enabled: boolean;
@@ -239,6 +251,11 @@ type LoadResult =
       ticketPanels: TicketPanelRow[];
       pricelistPanels: PricelistPanelRow[];
       premium: boolean;
+      customization: {
+        nickname: string | null;
+        avatarUrl: string | null;
+        updatedAt: string | null;
+      };
       giveaways: Array<{
         id: string;
         channelId: string;
@@ -288,7 +305,7 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
   const { data: guildRow, error: guildRowError } = await admin
     .from('bot_guilds')
     .select(
-      'welcome_enabled, welcome_channel_id, welcome_message, welcome_use_embed, welcome_embed_color, welcome_dm_enabled, welcome_dm_message, welcome_dm_use_embed, booster_enabled, booster_channel_id, booster_message, booster_use_embed, booster_embed_color, auto_roles_enabled, auto_role_ids, log_channel_id, log_joins, log_leaves, log_message_edits, log_message_deletes, log_role_changes, level_enabled, level_announce, level_up_channel_id, level_use_embed, level_embed_color, automod_enabled, automod_block_links, automod_link_allowlist, automod_max_caps_pct, automod_max_mentions, automod_banned_words, verify_enabled, verify_channel_id, verify_role_id, verify_message, verify_panel_message_id, verify_panel_title, verify_panel_color, verify_button_label, verify_button_emoji, verify_button_style, verify_reply_success, verify_reply_already, antiraid_enabled, antiraid_join_threshold, antiraid_join_window_sec, antiraid_action, antiraid_alert_channel_id, birthday_enabled, birthday_channel_id, birthday_message, role_badges_enabled, afk_enabled, afk_channel_id, afk_timeout_minutes, suggestions_enabled, suggestions_channel_id, suggestions_mod_role_id, suggestions_embed_title, suggestions_embed_message, suggestions_embed_color, suggestions_footer_text, suggestions_banner_url, suggestions_thumbnail_url, suggestions_upvote_emoji, suggestions_downvote_emoji, suggestions_status_open_emoji, suggestions_status_ended_emoji, suggestions_allowed_role_ids, suggestions_end_message, suggestions_field_order, invite_tracker_enabled, tempvoice_enabled, tempvoice_creator_channel_id, tempvoice_category_id, tempvoice_name_template, tempvoice_default_limit, daily_image_enabled, daily_image_channel_id, daily_image_hour, daily_image_urls',
+      'welcome_enabled, welcome_channel_id, welcome_message, welcome_use_embed, welcome_embed_color, welcome_dm_enabled, welcome_dm_message, welcome_dm_use_embed, farewell_enabled, farewell_channel_id, farewell_message, farewell_use_embed, farewell_embed_color, booster_enabled, booster_channel_id, booster_message, booster_use_embed, booster_embed_color, auto_roles_enabled, auto_role_ids, log_channel_id, log_joins, log_leaves, log_message_edits, log_message_deletes, log_role_changes, level_enabled, level_announce, level_up_channel_id, level_use_embed, level_embed_color, automod_enabled, automod_block_links, automod_link_allowlist, automod_max_caps_pct, automod_max_mentions, automod_banned_words, verify_enabled, verify_channel_id, verify_role_id, verify_message, verify_panel_message_id, verify_panel_title, verify_panel_color, verify_button_label, verify_button_emoji, verify_button_style, verify_reply_success, verify_reply_already, antiraid_enabled, antiraid_join_threshold, antiraid_join_window_sec, antiraid_action, antiraid_alert_channel_id, birthday_enabled, birthday_channel_id, birthday_message, role_badges_enabled, afk_enabled, afk_channel_id, afk_timeout_minutes, suggestions_enabled, suggestions_channel_id, suggestions_mod_role_id, suggestions_embed_title, suggestions_embed_message, suggestions_embed_color, suggestions_footer_text, suggestions_banner_url, suggestions_thumbnail_url, suggestions_upvote_emoji, suggestions_downvote_emoji, suggestions_status_open_emoji, suggestions_status_ended_emoji, suggestions_allowed_role_ids, suggestions_end_message, suggestions_field_order, invite_tracker_enabled, tempvoice_enabled, tempvoice_creator_channel_id, tempvoice_category_id, tempvoice_name_template, tempvoice_default_limit, daily_image_enabled, daily_image_channel_id, daily_image_hour, daily_image_urls',
     )
     .eq('guild_id', guildId)
     .maybeSingle();
@@ -302,9 +319,14 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
   if (!guildRow) return { kind: 'no-bot' };
 
   let channels: DiscordChannel[] = [];
+  let voiceChannels: DiscordChannel[] = [];
   try {
-    channels = (await fetchGuildChannels(guildId))
+    const all = await fetchGuildChannels(guildId);
+    channels = all
       .filter((c) => c.type === CHANNEL_TYPE_TEXT || c.type === CHANNEL_TYPE_ANNOUNCEMENT)
+      .sort((a, b) => a.position - b.position);
+    voiceChannels = all
+      .filter((c) => c.type === CHANNEL_TYPE_VOICE || c.type === CHANNEL_TYPE_STAGE)
       .sort((a, b) => a.position - b.position);
   } catch (err) {
     // Rate-Limit: leise weitermachen mit leerer Liste — die Page bleibt nutzbar.
@@ -542,6 +564,17 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
 
   const premium = await isGuildPremium(guildId);
 
+  const { data: customizationRow } = await admin
+    .from('bot_guild_customization')
+    .select('nickname, avatar_url, updated_at')
+    .eq('guild_id', guildId)
+    .maybeSingle();
+  const customization = {
+    nickname: (customizationRow?.nickname as string | null) ?? null,
+    avatarUrl: (customizationRow?.avatar_url as string | null) ?? null,
+    updatedAt: (customizationRow?.updated_at as string | null) ?? null,
+  };
+
   const { data: teamlistsRaw } = await admin
     .from('bot_teamlists')
     .select('id, channel_id, message_id, title, role_ids, color')
@@ -575,6 +608,7 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
     guildName: guildName ?? guildId,
     guildIcon,
     channels,
+    voiceChannels,
     roles,
     welcome: {
       enabled: guildRow.welcome_enabled,
@@ -585,6 +619,13 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
       dmEnabled: Boolean(guildRow.welcome_dm_enabled),
       dmMessage: (guildRow.welcome_dm_message as string | null) ?? null,
       dmUseEmbed: Boolean(guildRow.welcome_dm_use_embed),
+    },
+    farewell: {
+      enabled: Boolean(guildRow.farewell_enabled),
+      channelId: (guildRow.farewell_channel_id as string | null) ?? null,
+      message: (guildRow.farewell_message as string | null) ?? null,
+      useEmbed: Boolean(guildRow.farewell_use_embed),
+      embedColor: (guildRow.farewell_embed_color as number | null) ?? null,
     },
     booster: {
       enabled: Boolean(guildRow.booster_enabled),
@@ -711,6 +752,7 @@ async function load(userId: string, guildId: string): Promise<LoadResult> {
     ticketPanels,
     pricelistPanels,
     premium,
+    customization,
     giveaways,
     autoRoles: {
       enabled: Boolean(guildRow.auto_roles_enabled),
@@ -834,12 +876,14 @@ export default async function GuildSettingsPage({
                 : null
             }
             channels={result.channels.map((c) => ({ id: c.id, name: c.name }))}
+            voiceChannels={result.voiceChannels.map((c) => ({ id: c.id, name: c.name }))}
             roles={result.roles.map((r) => ({
               id: r.id,
               name: r.name,
               color: r.color,
             }))}
             welcome={result.welcome}
+            farewell={result.farewell}
             booster={result.booster}
             stickyMessages={result.stickyMessages}
             channelModes={result.channelModes}
@@ -869,6 +913,7 @@ export default async function GuildSettingsPage({
             ticketPanels={result.ticketPanels}
             pricelistPanels={result.pricelistPanels}
             premium={result.premium}
+            customization={result.customization}
           />
         )}
       </div>
@@ -881,8 +926,10 @@ function GuildSettingsView({
   guildId,
   guildIcon,
   channels,
+  voiceChannels,
   roles,
   welcome,
+  farewell,
   booster,
   stickyMessages,
   channelModes,
@@ -912,11 +959,13 @@ function GuildSettingsView({
   ticketPanels,
   pricelistPanels,
   premium,
+  customization,
 }: {
   guildName: string;
   guildId: string;
   guildIcon: string | null;
   channels: Array<{ id: string; name: string }>;
+  voiceChannels: Array<{ id: string; name: string }>;
   roles: Array<{ id: string; name: string; color: number }>;
   welcome: {
     enabled: boolean;
@@ -927,6 +976,13 @@ function GuildSettingsView({
     dmEnabled: boolean;
     dmMessage: string | null;
     dmUseEmbed: boolean;
+  };
+  farewell: {
+    enabled: boolean;
+    channelId: string | null;
+    message: string | null;
+    useEmbed: boolean;
+    embedColor: number | null;
   };
   booster: {
     enabled: boolean;
@@ -1092,6 +1148,11 @@ function GuildSettingsView({
   ticketPanels: TicketPanelRow[];
   pricelistPanels: PricelistPanelRow[];
   premium: boolean;
+  customization: {
+    nickname: string | null;
+    avatarUrl: string | null;
+    updatedAt: string | null;
+  };
 }) {
   const moduleDefs = [
     {
@@ -1101,6 +1162,15 @@ function GuildSettingsView({
       tab: 'welcome',
       enabled: welcome.enabled,
       toggleable: true,
+    },
+    {
+      key: 'farewell' as const,
+      name: 'Farewell',
+      description: 'Verabschiedet Mitglieder, die den Server verlassen oder gekickt werden.',
+      tab: 'farewell',
+      enabled: farewell.enabled,
+      toggleable: true,
+      isNew: true,
     },
     {
       key: 'autoroles' as const,
@@ -1349,6 +1419,15 @@ function GuildSettingsView({
       ),
     },
     {
+      id: 'farewell',
+      label: 'Farewell',
+      icon: '👋',
+      description: 'Abschieds-Nachricht für Mitglieder, die den Server verlassen.',
+      content: (
+        <FarewellForm guildId={guildId} channels={channels} initial={farewell} />
+      ),
+    },
+    {
       id: 'autoroles',
       label: 'Auto-Roles',
       icon: '🎭',
@@ -1514,7 +1593,7 @@ function GuildSettingsView({
       label: 'AFK-Room',
       icon: '💤',
       description: 'Stumm/taube User in AFK-Voice verschieben.',
-      content: <AfkForm guildId={guildId} channels={channels} initial={afk} />,
+      content: <AfkForm guildId={guildId} channels={voiceChannels} initial={afk} />,
     },
     {
       id: 'suggestions',
@@ -1617,6 +1696,15 @@ function GuildSettingsView({
       icon: '🛒',
       description: 'Stripe-Bestellungen direkt aus Discord — Produkte, Checkout, Order-Channels.',
       content: <ShopForm guildId={guildId} channels={channels} roles={roles} />,
+    },
+    {
+      id: 'customization',
+      label: 'Bot-Identität',
+      icon: '🪪',
+      description: 'Eigener Nickname und Avatar des Bots — pro Server frei einstellbar.',
+      content: (
+        <BotCustomizationForm guildId={guildId} initial={customization} />
+      ),
     },
     {
       id: 'premium',

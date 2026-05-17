@@ -197,7 +197,9 @@ export type DiscordChannel = {
 
 // Discord Channel Types
 export const CHANNEL_TYPE_TEXT = 0;
+export const CHANNEL_TYPE_VOICE = 2;
 export const CHANNEL_TYPE_ANNOUNCEMENT = 5;
+export const CHANNEL_TYPE_STAGE = 13;
 
 export class DiscordRateLimitError extends Error {
   constructor(public readonly retryAfterSec: number, public readonly endpoint: string) {

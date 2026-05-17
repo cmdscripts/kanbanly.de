@@ -2,6 +2,7 @@ import type { SlashCommand } from '../types.js';
 import ping from './ping.js';
 import help from './help.js';
 import welcome from './welcome.js';
+import farewell from './farewell.js';
 import reactionroles from './reactionroles.js';
 import warn from './warn.js';
 import kick from './kick.js';
@@ -28,6 +29,7 @@ export const commands: SlashCommand[] = [
   ping,
   help,
   welcome,
+  farewell,
   reactionroles,
   warn,
   kick,

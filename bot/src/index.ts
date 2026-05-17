@@ -2,6 +2,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags, Partials } from 'disco
 import { env } from './env.js';
 import { commandMap } from './commands/index.js';
 import { registerGuildMemberAdd } from './events/guildMemberAdd.js';
+import { registerGuildMemberRemove } from './events/guildMemberRemove.js';
 import { registerGuildCreate } from './events/guildCreate.js';
 import { registerReactionEvents } from './events/reactions.js';
 import { registerLogger } from './events/logger.js';
@@ -34,6 +35,10 @@ import { registerTempVoice } from './events/tempVoice.js';
 import { startDailyImageScheduler } from './events/dailyImageScheduler.js';
 import { startTeamlistScheduler } from './events/teamlistScheduler.js';
 import { registerEmbedActions } from './events/embedActions.js';
+import {
+  applyAllCustomizationsOnStartup,
+  startCustomizationRealtime,
+} from './db/customization.js';
 
 // Intents:
 // - Guilds: Slash-Commands, Channel/Role-Cache
@@ -64,6 +69,11 @@ const client = new Client({
 
 client.once(Events.ClientReady, (c) => {
   console.log(`[bot] eingeloggt als ${c.user.tag} · ${c.guilds.cache.size} Guild(s)`);
+  // Beim Bot-Start: alle gespeicherten Customizations einmal anwenden.
+  applyAllCustomizationsOnStartup(c).catch((err) =>
+    console.error('[bot] customization-startup:', err),
+  );
+  startCustomizationRealtime(c);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -88,6 +98,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 registerGuildCreate(client);
 registerGuildMemberAdd(client);
+registerGuildMemberRemove(client);
 registerReactionEvents(client);
 registerLogger(client);
 registerXp(client);
