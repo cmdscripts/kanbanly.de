@@ -208,8 +208,29 @@ export class DiscordRateLimitError extends Error {
   }
 }
 
+// Baut eine vollständige Discord-API-URL und verhindert Host-Wechsel durch User-Input.
+// `:` (Scheme-Separator), `..` (Path-Traversal) und führendes `//` (protokoll-relativ)
+// sind alle verboten — damit kann `new URL(path, base)` den Host nicht überschreiben.
+const DISCORD_API_ORIGIN = 'https://discord.com';
+const DISCORD_API_BASE = 'https://discord.com/api/v10/';
+
+function buildDiscordUrl(path: string): URL {
+  if (path.length === 0 || path[0] !== '/') {
+    throw new Error(`Invalid Discord path: ${path}`);
+  }
+  if (path.includes(':') || path.includes('..') || path.startsWith('//')) {
+    throw new Error(`Invalid Discord path (unsafe characters): ${path}`);
+  }
+  // Slice führendes `/` ab — sonst würde absolute-path den base-Pfad ersetzen.
+  const url = new URL(path.slice(1), DISCORD_API_BASE);
+  if (url.origin !== DISCORD_API_ORIGIN) {
+    throw new Error(`Invalid Discord path (host escape): ${path}`);
+  }
+  return url;
+}
+
 async function discordGet<T>(path: string, token: string, tokenKind: 'Bot' | 'Bearer' = 'Bot'): Promise<T> {
-  const res = await fetch(`${DISCORD_API}${path}`, {
+  const res = await fetch(buildDiscordUrl(path), {
     headers: { Authorization: `${tokenKind} ${token}` },
     cache: 'no-store',
   });
